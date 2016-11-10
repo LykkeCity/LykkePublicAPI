@@ -1,12 +1,12 @@
 ﻿using AzureRepositories;
 using AzureRepositories.Assets;
+using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
-using AzureRepositories.Reports;
 using AzureStorage.Tables;
 using Common;
 using Core.Domain.Assets;
+using Core.Domain.Exchange;
 using Core.Domain.Feed;
-using Core.Domain.Reports;
 using Core.Domain.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -47,13 +47,9 @@ namespace LykkePublicAPI
                 new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.Db.HLiquidityConnString,
                     "MarketProfile", null)));
 
-            var tableVersion = 
-                new JobSyncLogRepository(new AzureTableStorage<JobSyncLogRecord>(settings.Db.OlapLogsConnString,
-                    "JobSyncLogs", null)).GetTradeReportsTableVersion().Result;
-
-            services.AddSingleton<ITradeVolumesRepository>(
-                new TradeVolumesRepository(new AzureTableStorage<TradeVolumesRecord>(settings.Db.OlapConnString,
-                    $"AssetSummariesByDays{tableVersion}", null)));
+            services.AddSingleton<IMarketDataRepository>(
+                new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
+                    "MarketsData", null)));
 
             services.AddMvc();
 

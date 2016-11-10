@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Core.Domain.Exchange;
 using Core.Domain.Feed;
-using Core.Domain.Reports;
 
 namespace LykkePublicAPI.Models
 {
@@ -12,11 +12,13 @@ namespace LykkePublicAPI.Models
         public double Ask { get; set; }
     }
 
-    public class ApiTradeVolume
+    public class ApiMarketData
     {
-        public string AssetId { get; set; }
-        public double Volume { get; set; }
-        public int TradesCount { get; set; }
+        public string AssetPair { get; set; }
+        public double Volume24H { get; set; }
+        public double LastPrice { get; set; }
+        public double Bid { get; set; }
+        public double Ask { get; set; }
     }
 
     public static class Convertions
@@ -36,19 +38,22 @@ namespace LykkePublicAPI.Models
             };
         }
 
-        public static IEnumerable<ApiTradeVolume> ToApiModel(this IEnumerable<ITradeVolumesRecord> tradeVolumes)
+        public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)
         {
-            return tradeVolumes.Select(x => x.ToApiModel());
+            return new ApiMarketData
+            {
+                Ask = feedData.Ask,
+                AssetPair = marketData.AssetPairId,
+                Bid = feedData.Bid,
+                LastPrice = marketData.LastPrice,
+                Volume24H = marketData.LkkVolume
+            };
         }
 
-        public static ApiTradeVolume ToApiModel(this ITradeVolumesRecord tradeVolume)
+        public static IEnumerable<ApiMarketData> ToApiModel(this IEnumerable<IMarketData> marketData,
+            MarketProfile marketProfile)
         {
-            return new ApiTradeVolume
-            {
-                AssetId = tradeVolume.Asset,
-                TradesCount = tradeVolume.TradesCount,
-                Volume = tradeVolume.TotalVolume
-            };
+            return marketData.Select(x => x.ToApiModel(marketProfile.Profile.First(y => y.Asset == x.AssetPairId)));
         }
     }
 }

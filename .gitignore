@@ -15,6 +15,7 @@
 *.suo
 *.tmp
 *.user
+*.lock.json
 
 # Well-known infrastructure folders
 /packages/

@@ -11,8 +11,8 @@ namespace AzureRepositories.Exchange
     public class MarketDataEntity : TableEntity, IMarketData
     {
         public string AssetPairId { get; set; }
-        public double LkkVolume { get; set; }
-        public double LastPrice { get; set; }
+        public double UsdVolume { get; set; }
+        public double LastPriceUsd { get; set; }
         public DateTime Dt { get; set; }
 
         public static string GeneratePartition()
@@ -31,8 +31,8 @@ namespace AzureRepositories.Exchange
             {
                 AssetPairId = md.AssetPairId,
                 Dt = md.Dt,
-                LastPrice = md.LastPrice,
-                LkkVolume = md.LkkVolume,
+                LastPriceUsd = md.LastPriceUsd,
+                UsdVolume = md.UsdVolume,
                 PartitionKey = GeneratePartition(),
                 RowKey = GenerateRowKey(md.AssetPairId)
             };
@@ -46,12 +46,6 @@ namespace AzureRepositories.Exchange
         public MarketDataRepository(INoSQLTableStorage<MarketDataEntity> tableStorage)
         {
             _tableStorage = tableStorage;
-        }
-
-        public Task AddOrReplaceMarketData(IEnumerable<IMarketData> data)
-        {
-            var entities = data.Select(MarketDataEntity.Create);
-            return _tableStorage.InsertAsync(entities);
         }
 
         public async Task<IEnumerable<IMarketData>> Get24HMarketsAsync()

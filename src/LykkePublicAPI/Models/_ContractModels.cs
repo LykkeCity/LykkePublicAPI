@@ -45,8 +45,8 @@ namespace LykkePublicAPI.Models
                 Ask = feedData.Ask,
                 AssetPair = marketData.AssetPairId,
                 Bid = feedData.Bid,
-                LastPrice = marketData.LastPrice,
-                Volume24H = marketData.LkkVolume
+                LastPrice = marketData.LastPriceUsd,
+                Volume24H = marketData.UsdVolume
             };
         }
 

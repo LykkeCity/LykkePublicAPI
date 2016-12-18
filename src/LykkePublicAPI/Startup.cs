@@ -65,11 +65,22 @@ namespace LykkePublicAPI
                     License = new License { Name = "Use under MIT", Url = "https://github.com/LykkeCity/LykkePublicAPI/blob/master/LICENSE" }
                 });
             });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Lykke", builder =>
+                {
+                    builder
+                        .WithOrigins("https://lykke.com")
+                        .AllowAnyMethod();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.UseCors("Lykke");
             app.UseMvc();
 
             if (env.IsDevelopment())

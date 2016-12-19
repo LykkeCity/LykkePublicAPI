@@ -50,8 +50,17 @@ namespace AzureRepositories.Exchange
 
         public async Task<IEnumerable<IMarketData>> Get24HMarketsAsync()
         {
-            var records = await _tableStorage.GetDataAsync(MarketDataEntity.GeneratePartition());
-            return records.Where(x => x.Dt > DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)));
+            var records = (await _tableStorage.GetDataAsync(MarketDataEntity.GeneratePartition())).ToArray();
+
+            foreach (var record in records)
+            {
+                if (record.Dt < DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)))
+                {
+                    record.UsdVolume = 0;
+                }
+            }
+
+            return records;
         }
     }
 }

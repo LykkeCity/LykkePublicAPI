@@ -11,8 +11,8 @@ namespace AzureRepositories.Exchange
     public class MarketDataEntity : TableEntity, IMarketData
     {
         public string AssetPairId { get; set; }
-        public double UsdVolume { get; set; }
-        public double LastPriceUsd { get; set; }
+        public double Volume { get; set; }
+        public double LastPrice { get; set; }
         public DateTime Dt { get; set; }
 
         public static string GeneratePartition()
@@ -31,8 +31,8 @@ namespace AzureRepositories.Exchange
             {
                 AssetPairId = md.AssetPairId,
                 Dt = md.Dt,
-                LastPriceUsd = md.LastPriceUsd,
-                UsdVolume = md.UsdVolume,
+                LastPrice = md.LastPrice,
+                Volume = md.Volume,
                 PartitionKey = GeneratePartition(),
                 RowKey = GenerateRowKey(md.AssetPairId)
             };
@@ -56,7 +56,7 @@ namespace AzureRepositories.Exchange
             {
                 if (record.Dt < DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)))
                 {
-                    record.UsdVolume = 0;
+                    record.Volume = 0;
                 }
             }
 

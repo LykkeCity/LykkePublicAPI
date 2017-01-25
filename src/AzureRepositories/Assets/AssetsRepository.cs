@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AzureStorage;
 using Core.Domain.Assets;
-using Core.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace AzureRepositories.Assets

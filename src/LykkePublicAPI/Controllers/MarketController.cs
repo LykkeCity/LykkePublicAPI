@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common;
 using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
@@ -15,15 +16,15 @@ namespace LykkePublicAPI.Controllers
     {
         private readonly IMarketDataRepository _marketDataRepository;
         private readonly IAssetPairBestPriceRepository _marketProfileRepo;
-        private readonly IAssetPairsRepository _assetPairsRepository;
+        private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDictionary;
 
         public MarketController(IMarketDataRepository marketDataRepository,
             IAssetPairBestPriceRepository marketProfileRepo,
-            IAssetPairsRepository assetPairsRepository)
+            CachedDataDictionary<string, IAssetPair> assetPairsDictionary )
         {
             _marketDataRepository = marketDataRepository;
             _marketProfileRepo = marketProfileRepo;
-            _assetPairsRepository = assetPairsRepository;
+            _assetPairsDictionary = assetPairsDictionary;
         }
 
         [HttpGet]
@@ -34,7 +35,7 @@ namespace LykkePublicAPI.Controllers
                 (await _marketDataRepository.Get24HMarketsAsync()).ToApiModel(marketProfile)
                     .ToList();
 
-            var assetPairs = (await _assetPairsRepository.GetAllAsync()).Where(x => !x.IsDisabled);
+            var assetPairs = (await _assetPairsDictionary.Values()).Where(x => !x.IsDisabled);
 
             var emptyRecords =
                 assetPairs.Where(

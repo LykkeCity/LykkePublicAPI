@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Core.Domain.Feed;
-using Core.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
+using AzureStorage;
 
 namespace AzureRepositories.Feed
 {

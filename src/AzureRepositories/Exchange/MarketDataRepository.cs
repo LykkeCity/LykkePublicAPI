@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AzureStorage;
 using Core.Domain.Exchange;
-using Core.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace AzureRepositories.Exchange

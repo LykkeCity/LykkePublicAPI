@@ -23,7 +23,7 @@ namespace LykkePublicAPI.Controllers
         }
 
         [HttpGet("{assetPairId}")]
-        public Task<IEnumerable<IOrderBook>> Get(string assetPairId, [FromQuery]bool isBuy)
+        public Task<IEnumerable<IOrderBook>> Get(string assetPairId)
         {
             return _orderBooksService.GetAsync(assetPairId);
         }

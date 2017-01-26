@@ -95,6 +95,7 @@ namespace LykkePublicAPI
                 options.SingleApiVersion(new Info
                 {
                     Version = "v1",
+                    Title = "",
                     TermsOfService = "https://lykke.com/city/terms_of_use"
                 });
 

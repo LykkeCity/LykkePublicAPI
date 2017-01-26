@@ -1,0 +1,16 @@
+﻿@font-face { font-family: 'Proxima Nova'; src: url("/fonts/ProximaNovaRegular.eot"); /* IE9 Compat Modes */ src: url("/fonts/ProximaNovaRegular.eot?#iefix") format("embedded-opentype"), url("/fonts/ProximaNovaRegular.woff") format("woff"), url("/fonts/ProximaNovaRegular.ttf") format("truetype"), url("/fonts/ProximaNovaRegular.svg#2c1459d58560f08b4b0586fbe80aa4cd") format("svg"); /* Legacy iOS */ font-style: normal; font-weight: 400; }
+
+.swagger-section #header
+{
+    font-style: normal;
+    font-weight: 400;
+    font-family: "Proxima Nova", "Segoe UI", Roboto, "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+    background-color: #ab00ff;
+}
+
+.swagger-section #header h1
+{
+    text-align: center;
+    font-size: 28px;
+    color: #fff;
+}

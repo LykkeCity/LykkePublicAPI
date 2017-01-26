@@ -27,6 +27,10 @@ namespace LykkePublicAPI.Controllers
             _assetPairsDictionary = assetPairsDictionary;
         }
 
+        /// <summary>
+        /// Get trade volumes for all available assetpairs
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IEnumerable<ApiMarketData>> Get()
         {

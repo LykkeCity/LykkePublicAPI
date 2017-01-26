@@ -16,12 +16,21 @@ namespace LykkePublicAPI.Controllers
             _orderBooksService = orderBooksService;
         }
 
+        /// <summary>
+        /// Get all orderbooks
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public Task<IEnumerable<IOrderBook>> Get()
         {
             return _orderBooksService.GetAllAsync();
         }
 
+        /// <summary>
+        /// Get orderbook for specified asset pair
+        /// </summary>
+        /// <param name="assetPairId"></param>
+        /// <returns></returns>
         [HttpGet("{assetPairId}")]
         public Task<IEnumerable<IOrderBook>> Get(string assetPairId)
         {

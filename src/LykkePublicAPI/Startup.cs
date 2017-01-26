@@ -1,4 +1,5 @@
-﻿using AzureRepositories;
+﻿using System.IO;
+using AzureRepositories;
 using AzureRepositories.Assets;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
@@ -17,6 +18,9 @@ using Microsoft.Extensions.Logging;
 using Services;
 using Swashbuckle.Swagger.Model;
 using System.Linq;
+using AzureRepositories.Candles;
+using Core.Domain.Candles;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace LykkePublicAPI
 {
@@ -56,6 +60,10 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
+            services.AddSingleton<IFeedCandlesRepository>(
+                new FeedCandlesRepository(new AzureTableStorage<FeedCandleEntity>(settings.Db.HLiquidityConnString,
+                    "CandlesHistory", null)));
+
             services.AddSingleton(x =>
             {
                 var assetPairsRepository = (IAssetPairsRepository)x.GetService(typeof(IAssetPairsRepository));
@@ -87,10 +95,17 @@ namespace LykkePublicAPI
                 options.SingleApiVersion(new Info
                 {
                     Version = "v1",
-                    Title = "Lykke public API",
-                    TermsOfService = "https://lykke.com/city/terms_of_use",
-                    License = new License { Name = "Use under MIT", Url = "https://github.com/LykkeCity/LykkePublicAPI/blob/master/LICENSE" }
+                    TermsOfService = "https://lykke.com/city/terms_of_use"
                 });
+
+                options.DescribeAllEnumsAsStrings();
+
+                //Determine base path for the application.
+                var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+
+                //Set the comments path for the swagger json and ui.
+                var xmlPath = Path.Combine(basePath, "LykkePublicAPI.xml");
+                options.IncludeXmlComments(xmlPath);
             });
 
             services.AddCors(options =>
@@ -108,6 +123,9 @@ namespace LykkePublicAPI
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             app.UseCors("Lykke");
+
+            app.UseStaticFiles();
+
             app.UseMvc();
 
             if (env.IsDevelopment())

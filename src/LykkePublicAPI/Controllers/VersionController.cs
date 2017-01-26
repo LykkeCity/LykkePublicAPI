@@ -5,6 +5,10 @@ namespace LykkePublicAPI.Controllers
     [Route("home/[controller]")]
     public class VersionController : Controller
     {
+        /// <summary>
+        /// Get current app version
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public VersionModel Get()
         {

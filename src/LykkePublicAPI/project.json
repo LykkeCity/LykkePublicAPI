@@ -24,7 +24,8 @@
       "type": "platform",
       "version": "1.1.0"
     },
-    "Services": "1.0.0"
+    "Services": "1.0.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0"
   },
 
   "tools": {
@@ -42,7 +43,9 @@
 
   "buildOptions": {
     "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+    "xmlDoc": true,
+    "nowarn": [ "1591", "1573" ]
   },
 
   "runtimeOptions": {

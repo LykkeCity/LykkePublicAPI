@@ -73,6 +73,13 @@ namespace LykkePublicAPI
 
             services.AddSingleton(x =>
             {
+                var assetRepository = (IAssetsRepository) x.GetService(typeof(IAssetsRepository));
+                return new CachedDataDictionary<string, IAsset>(
+                    async () => (await assetRepository.GetAssetsAsync()).ToDictionary(itm => itm.Id));
+            });
+
+            services.AddSingleton(x =>
+            {
                 var assetsRepo = (IAssetsRepository)x.GetService(typeof(IAssetsRepository));
                 return new CachedDataDictionary<string, IAsset>(
                     async () => (await assetsRepo.GetAssetsAsync()).ToDictionary(itm => itm.Id));

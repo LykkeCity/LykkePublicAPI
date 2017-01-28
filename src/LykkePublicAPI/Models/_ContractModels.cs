@@ -21,6 +21,20 @@ namespace LykkePublicAPI.Models
         public string QuotingAssetId { get; set; }
     }
 
+    public class ApiAsset
+    {
+        public string Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string BitcoinAssetId { get; set; }
+        public string BitcoinAssetAddress { get; set; }
+
+        public string Symbol { get; set; }
+
+        public int Accuracy { get; set; }
+    }
+
     public class ApiAssetPairRateModel
     {
         public string Id { get; set; }
@@ -132,6 +146,24 @@ namespace LykkePublicAPI.Models
             }
 
             return result;
+        }
+
+        public static ApiAsset ToApiModel(this IAsset asset)
+        {
+            return new ApiAsset
+            {
+                Accuracy = asset.Accuracy,
+                BitcoinAssetAddress = asset.AssetAddress,
+                BitcoinAssetId = asset.BlockChainAssetId,
+                Id = asset.Id,
+                Name = asset.Name,
+                Symbol = asset.Symbol
+            };
+        }
+
+        public static IEnumerable<ApiAsset> ToApiModel(this IEnumerable<IAsset> assets)
+        {
+            return assets.Select(x => x.ToApiModel());
         }
     }
 }

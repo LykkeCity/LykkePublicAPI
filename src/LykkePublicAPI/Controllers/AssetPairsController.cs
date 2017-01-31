@@ -5,6 +5,7 @@ using Common;
 using Core.Domain.Assets;
 using Core.Domain.Candles;
 using Core.Domain.Feed;
+using Core.Feed;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,14 +17,16 @@ namespace LykkePublicAPI.Controllers
         private readonly IAssetPairBestPriceRepository _assetPairBestPriceRepository;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairDictionary;
         private readonly IFeedCandlesRepository _feedCandlesRepository;
+        private readonly IFeedHistoryRepository _feedHistoryRepository;
 
         public AssetPairsController(IAssetPairBestPriceRepository assetPairBestPriceRepository,
             CachedDataDictionary<string, IAssetPair> assetPairDictionary,
-            IFeedCandlesRepository feedCandlesRepository)
+            IFeedCandlesRepository feedCandlesRepository, IFeedHistoryRepository feedHistoryRepository)
         {
             _assetPairBestPriceRepository = assetPairBestPriceRepository;
             _assetPairDictionary = assetPairDictionary;
             _feedCandlesRepository = feedCandlesRepository;
+            _feedHistoryRepository = feedHistoryRepository;
         }
 
         /// <summary>
@@ -74,36 +77,48 @@ namespace LykkePublicAPI.Controllers
         [ProducesResponseType(typeof(ApiError), 400)]
         public async Task<IActionResult> GetHistoryRate([FromBody] AssetPairsRateHistoryRequest request)
         {
-            if (request.AssetPairIds.Length > 10)
+            //if (request.AssetPairIds.Length > 10)
+            //    return
+            //        BadRequest(new ApiError {Code = ErrorCodes.InvalidInput, Msg = "Maximum 10 asset pairs allowed" });
+
+            if (request.Period != Period.Day)
                 return
-                    BadRequest(Json(new ApiError {Code = ErrorCodes.InvalidInput, Msg = "Maximum 10 asset pairs allowed" }));
+                    BadRequest(new ApiError { Code = ErrorCodes.InvalidInput, Msg = "Sorry, only day candles are available (temporary)." });
 
             var pairs = (await _assetPairDictionary.Values()).Where(x => !x.IsDisabled);
 
             if (request.AssetPairIds.Any(x => !pairs.Select(y => y.Id).Contains(x)))
                 return
-                    BadRequest(Json(new ApiError {Code = ErrorCodes.InvalidInput, Msg = "Unkown asset pair id present"}));
+                    BadRequest(new ApiError {Code = ErrorCodes.InvalidInput, Msg = "Unkown asset pair id present"});
 
-            var candlesTasks = new List<Task<CandleWithPairId>>();
+            //var candlesTasks = new List<Task<CandleWithPairId>>();
+
+            var candles = new List<CandleWithPairId>();
 
             foreach (var pairId in request.AssetPairIds)
             {
-                candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
-                    true, request.DateTime).ContinueWith(task => new CandleWithPairId
-                {
-                    AssetPairId = pairId,
-                    Candle = task.Result
-                }));
+                var askFeed = _feedHistoryRepository.GetСlosestAvailableAsync(pairId, TradePriceType.Ask, request.DateTime);
+                var bidFeed = _feedHistoryRepository.GetСlosestAvailableAsync(pairId, TradePriceType.Bid, request.DateTime);
 
-                candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
-                    false, request.DateTime).ContinueWith(task => new CandleWithPairId
-                {
-                    AssetPairId = pairId,
-                    Candle = task.Result
-                }));
+                candles.Add((await askFeed).ToCandleWithPairId());
+                candles.Add((await bidFeed).ToCandleWithPairId());
+
+                //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
+                //    true, request.DateTime).ContinueWith(task => new CandleWithPairId
+                //{
+                //    AssetPairId = pairId,
+                //    Candle = task.Result
+                //}));
+
+                //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
+                //    false, request.DateTime).ContinueWith(task => new CandleWithPairId
+                //{
+                //    AssetPairId = pairId,
+                //    Candle = task.Result
+                //}));
             }
 
-            var candles = await Task.WhenAll(candlesTasks);
+            //var candles = await Task.WhenAll(candlesTasks);
 
             return Ok(candles.ToApiModel());
         }

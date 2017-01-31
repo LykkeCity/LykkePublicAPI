@@ -20,6 +20,7 @@ using Swashbuckle.Swagger.Model;
 using System.Linq;
 using AzureRepositories.Candles;
 using Core.Domain.Candles;
+using Core.Feed;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace LykkePublicAPI
@@ -63,6 +64,10 @@ namespace LykkePublicAPI
             services.AddSingleton<IFeedCandlesRepository>(
                 new FeedCandlesRepository(new AzureTableStorage<FeedCandleEntity>(settings.Db.HLiquidityConnString,
                     "CandlesHistory", null)));
+
+            services.AddSingleton<IFeedHistoryRepository>(
+                new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,
+                    "FeedHistory", null)));
 
             services.AddSingleton(x =>
             {

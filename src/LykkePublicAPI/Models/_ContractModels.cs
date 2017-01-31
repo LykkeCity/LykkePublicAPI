@@ -6,6 +6,7 @@ using Core.Domain.Assets;
 using Core.Domain.Candles;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
+using Core.Feed;
 
 namespace LykkePublicAPI.Models
 {
@@ -164,6 +165,23 @@ namespace LykkePublicAPI.Models
         public static IEnumerable<ApiAsset> ToApiModel(this IEnumerable<IAsset> assets)
         {
             return assets.Select(x => x.ToApiModel());
+        }
+
+        public static CandleWithPairId ToCandleWithPairId(this IFeedHistory feedHistory)
+        {
+            return new CandleWithPairId
+            {
+                AssetPairId = feedHistory.AssetPair,
+                Candle = new FeedCandle
+                {
+                    DateTime = feedHistory.FeedTime,
+                    Close = feedHistory.TradeCandles.Last().Close,
+                    High = feedHistory.TradeCandles.Last().High,
+                    IsBuy = feedHistory.PriceType == TradePriceType.Bid,
+                    Low = feedHistory.TradeCandles.Last().Low,
+                    Open = feedHistory.TradeCandles.Last().Open
+                }
+            };
         }
     }
 }

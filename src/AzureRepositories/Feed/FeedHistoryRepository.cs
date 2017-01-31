@@ -161,7 +161,7 @@ namespace AzureRepositories.Feed
                 resList.AddRange(entities);
             }, () => false);
 
-            return resList.First().ToDto();
+            return resList.First()?.ToDto();
         }
     }
 }

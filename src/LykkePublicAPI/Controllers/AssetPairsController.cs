@@ -100,8 +100,14 @@ namespace LykkePublicAPI.Controllers
                 var askFeed = _feedHistoryRepository.GetСlosestAvailableAsync(pairId, TradePriceType.Ask, request.DateTime);
                 var bidFeed = _feedHistoryRepository.GetСlosestAvailableAsync(pairId, TradePriceType.Bid, request.DateTime);
 
-                candles.Add((await askFeed).ToCandleWithPairId());
-                candles.Add((await bidFeed).ToCandleWithPairId());
+                var askCandle = (await askFeed)?.ToCandleWithPairId();
+                var bidCandle = (await bidFeed)?.ToCandleWithPairId();
+
+                if (askCandle != null && bidCandle != null)
+                {
+                    candles.Add(askCandle);
+                    candles.Add(bidCandle);
+                }
 
                 //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
                 //    true, request.DateTime).ContinueWith(task => new CandleWithPairId

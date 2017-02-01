@@ -94,6 +94,7 @@ namespace LykkePublicAPI.Controllers
             //var candlesTasks = new List<Task<CandleWithPairId>>();
 
             var candles = new List<CandleWithPairId>();
+            var result = new List<ApiAssetPairHistoryRateModel>();
 
             foreach (var pairId in request.AssetPairIds)
             {
@@ -107,6 +108,11 @@ namespace LykkePublicAPI.Controllers
                 {
                     candles.Add(askCandle);
                     candles.Add(bidCandle);
+                }
+                else
+                {
+                    //add empty candles
+                    result.Add(new ApiAssetPairHistoryRateModel {Id = pairId});
                 }
 
                 //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
@@ -126,7 +132,9 @@ namespace LykkePublicAPI.Controllers
 
             //var candles = await Task.WhenAll(candlesTasks);
 
-            return Ok(candles.ToApiModel());
+            result.AddRange(candles.ToApiModel());
+
+            return Ok(result);
         }
 
 
@@ -145,7 +153,7 @@ namespace LykkePublicAPI.Controllers
         /// </remarks>
         /// <param name="assetPairId">Asset pair Id</param>
         [HttpPost("rate/history/{assetPairId}")]
-        public async Task<ApiAssetPairRateModel> GetHistoryRate([FromRoute]string assetPairId,
+        public async Task<ApiAssetPairHistoryRateModel> GetHistoryRate([FromRoute]string assetPairId,
             [FromBody] AssetPairRateHistoryRequest request)
         {
             var buyCandle = _feedCandlesRepository.ReadCandleAsync(assetPairId, request.Period.ToDomainModel(),

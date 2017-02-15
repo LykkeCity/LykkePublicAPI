@@ -126,7 +126,9 @@ namespace LykkePublicAPI
                 options.AddPolicy("Lykke", builder =>
                 {
                     builder
-                        .WithOrigins("https://lykke.com")
+                        .WithOrigins("https://lykke.com",
+                        "http://lykke.com",
+                        "http://site-dev.lykke.com")
                         .AllowAnyMethod();
                 });
             });

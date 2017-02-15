@@ -51,8 +51,8 @@ namespace Services
         {
             var sellBook = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(assetPairId, false));
             var buyBook = _distributedCache.GetStringAsync(_settings.CacheSettings.GetOrderBookKey(assetPairId, true));
-            return new IOrderBook[] { (await sellBook).DeserializeJson<OrderBook>(),
-                (await buyBook).DeserializeJson<OrderBook>()};
+            return new IOrderBook[] { (await sellBook)?.DeserializeJson<OrderBook>(),
+                (await buyBook)?.DeserializeJson<OrderBook>()};
         }
     }
 }

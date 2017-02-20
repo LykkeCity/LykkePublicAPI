@@ -164,5 +164,49 @@ namespace LykkePublicAPI.Controllers
 
             return Convertions.ToApiModel(assetPairId, await buyCandle, await sellCandle);
         }
+
+        /// <summary>
+        /// Get candles for specified period and asset pair
+        /// </summary>
+        /// <remarks>
+        /// Available period values
+        ///  
+        ///     "Sec",
+        ///     "Minute",
+        ///     "Hour",
+        ///     "Day",
+        ///     "Month",
+        /// 
+        /// </remarks>
+        /// <param name="assetPairId">Asset pair Id</param>
+        [HttpPost("candle/history/{assetPairId}")]
+        [ProducesResponseType(typeof(AssetPairCandlesHistoryResponse), 200)]
+        [ProducesResponseType(typeof(ApiError), 400)]
+        public async Task<IActionResult> GetHistoryCandles([FromRoute]string assetPairId, [FromBody] AssetPairCandlesHistoryRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.ToApiError());
+            }
+
+            IEnumerable<IFeedCandle> candles = await _feedCandlesRepository.ReadCandlesAsync(
+                assetPairId,
+                request.Period.Value.ToDomainModel(),
+                request.DateFrom.Value,
+                request.DateTo.Value,
+                isBuy: true);
+
+            var response = new AssetPairCandlesHistoryResponse()
+            {
+                AssetPair = assetPairId,
+                Period = request.Period.Value,
+                DateFrom = request.DateFrom.Value,
+                DateTo = request.DateTo.Value,
+                IsBuy = true,
+                Data = candles.ToApiModel().ToList()
+            };
+
+            return Ok(response);
+        }
     }
 }

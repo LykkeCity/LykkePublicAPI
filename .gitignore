@@ -53,3 +53,7 @@ _UpgradeReport_Files/
 #include compiled contracts
 !/src/EthereumContractBuilder/contracts/bin/
 node_modules
+
+# DNX
+project.lock.json
+artifacts/

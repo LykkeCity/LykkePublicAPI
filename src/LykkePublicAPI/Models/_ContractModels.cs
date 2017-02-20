@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Core.Domain.Assets;
 using Core.Domain.Candles;
 using Core.Domain.Exchange;
@@ -63,6 +65,27 @@ namespace LykkePublicAPI.Models
     {
         public string AssetPairId { get; set; }
         public IFeedCandle Candle { get; set; }
+    }
+
+    public class ApiCandle
+    {
+        public DateTime T { get; set; }
+        public double O { get; set; }
+        public double C { get; set; }
+        public double H { get; set; }
+        public double L { get; set; }
+    }
+
+    public class AssetPairCandlesHistoryResponse
+    {
+        public string AssetPair { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Period Period { get; set; }
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public bool IsBuy { get; set; }
+        public List<ApiCandle> Data { get; set; } = new List<ApiCandle>();
     }
 
     public enum ErrorCodes
@@ -154,6 +177,30 @@ namespace LykkePublicAPI.Models
             }
 
             return result;
+        }
+
+        public static ApiCandle ToApiCandle(this IFeedCandle candle)
+        {
+            return (candle != null) ? new ApiCandle
+            {
+                T = candle.DateTime,
+                O = candle.Open,
+                C = candle.Close,
+                H = candle.High,
+                L = candle.Low
+            } : null;
+        }
+
+        public static IEnumerable<ApiCandle> ToApiModel(this IEnumerable<IFeedCandle> candles)
+        {
+            if (candles != null)
+            {
+                foreach (var candle in candles)
+                {
+                    yield return candle.ToApiCandle();
+                }
+            }
+            yield break;
         }
 
         public static ApiAsset ToApiModel(this IAsset asset)

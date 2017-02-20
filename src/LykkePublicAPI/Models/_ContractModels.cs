@@ -65,6 +65,17 @@ namespace LykkePublicAPI.Models
         public IFeedCandle Candle { get; set; }
     }
 
+    public class ApiCandleWithPair
+    {
+        public string AssetPair { get; set; }
+        public DateTime DateTime { get; set; }
+        public bool IsBuy { get; set; }
+        public double Open { get; set; }
+        public double Close { get; set; }
+        public double High { get; set; }
+        public double Low { get; set; }
+    }
+
     public enum ErrorCodes
     {
         InvalidInput = 1
@@ -154,6 +165,32 @@ namespace LykkePublicAPI.Models
             }
 
             return result;
+        }
+
+        public static ApiCandleWithPair ToCandleWithPairId(this IFeedCandle candle, string assetPairId)
+        {
+            return (candle != null) ? new ApiCandleWithPair
+            {
+                AssetPair = assetPairId,
+                DateTime = candle.DateTime,
+                Open = candle.Open,
+                Close = candle.Close,
+                High = candle.High,
+                Low = candle.Low,
+                IsBuy = candle.IsBuy
+            } : null;
+        }
+
+        public static IEnumerable<ApiCandleWithPair> ToApiModel(this IEnumerable<IFeedCandle> candles, string assetPairId)
+        {
+            if (candles != null)
+            {
+                foreach (var candle in candles)
+                {
+                    yield return candle.ToCandleWithPairId(assetPairId);
+                }
+            }
+            yield break;
         }
 
         public static ApiAsset ToApiModel(this IAsset asset)

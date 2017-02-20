@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Core.Domain.Candles;
 
 namespace LykkePublicAPI.Models
@@ -23,6 +24,21 @@ namespace LykkePublicAPI.Models
     {
         public Period Period { get; set; }
         public DateTime DateTime { get; set; }
+    }
+
+    public class AssetPairCandlesHistoryRequest
+    {
+        [Required]
+        public Period? Period { get; set; }
+
+        [Required]
+        [DataType(DataType.DateTime)]
+        public DateTime? DateFrom { get; set; }
+
+        [Required]
+        [DataType(DataType.DateTime)]
+        [DateGreaterThan("DateFrom")]
+        public DateTime? DateTo { get; set; }
     }
 
     public static class RequestsConvertorsExt

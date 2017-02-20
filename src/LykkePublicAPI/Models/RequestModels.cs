@@ -13,6 +13,12 @@ namespace LykkePublicAPI.Models
         Month
     }
 
+    public enum PriceType
+    {
+        Ask = 1,
+        Bid = 2
+    }
+
     public class AssetPairsRateHistoryRequest
     {
         public string[] AssetPairIds { get; set; }
@@ -26,10 +32,13 @@ namespace LykkePublicAPI.Models
         public DateTime DateTime { get; set; }
     }
 
-    public class AssetPairCandlesHistoryRequest
+    public class CandlesHistoryRequest
     {
         [Required]
         public Period? Period { get; set; }
+
+        [Required]
+        public PriceType? Type { get; set; }
 
         [Required]
         [DataType(DataType.DateTime)]

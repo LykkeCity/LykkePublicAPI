@@ -76,7 +76,7 @@ namespace LykkePublicAPI.Models
         public double L { get; set; }
     }
 
-    public class AssetPairCandlesHistoryResponse
+    public class CandlesHistoryResponse
     {
         public string AssetPair { get; set; }
 
@@ -84,7 +84,9 @@ namespace LykkePublicAPI.Models
         public Period Period { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-        public bool IsBuy { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public PriceType Type { get; set; }
         public List<ApiCandle> Data { get; set; } = new List<ApiCandle>();
     }
 

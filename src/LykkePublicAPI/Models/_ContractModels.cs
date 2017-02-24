@@ -5,10 +5,11 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Core.Domain.Assets;
-using Core.Domain.Candles;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Feed;
+using Lykke.Domain.Prices.Model;
+using Lykke.Domain.Prices.Contracts;
 
 namespace LykkePublicAPI.Models
 {

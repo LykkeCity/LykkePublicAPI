@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Core.Domain.Candles;
+using Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Models
 {
@@ -11,6 +11,12 @@ namespace LykkePublicAPI.Models
         Hour,
         Day,
         Month
+    }
+
+    public enum PriceType
+    {
+        Ask = 1,
+        Bid = 2
     }
 
     public class AssetPairsRateHistoryRequest
@@ -26,10 +32,13 @@ namespace LykkePublicAPI.Models
         public DateTime DateTime { get; set; }
     }
 
-    public class AssetPairCandlesHistoryRequest
+    public class CandlesHistoryRequest
     {
         [Required]
         public Period? Period { get; set; }
+
+        [Required]
+        public PriceType? Type { get; set; }
 
         [Required]
         [DataType(DataType.DateTime)]

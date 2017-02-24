@@ -127,7 +127,8 @@ namespace LykkePublicAPI
                 {
                     builder
                         .WithOrigins(settings.PublicApiSettings.CrossdomainOrigins)
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
                 });
             });
         }

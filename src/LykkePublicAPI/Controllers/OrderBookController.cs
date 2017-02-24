@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Domain.OrderBook;
 using Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Lykke.Domain.Prices.Contracts;
 
 namespace LykkePublicAPI.Controllers
 {

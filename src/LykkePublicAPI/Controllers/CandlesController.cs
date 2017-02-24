@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Core.Domain.Assets;
 using Core.Domain.Candles;
-using Core.Domain.Feed;
-using Core.Feed;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Lykke.Domain.Prices.Contracts;
 
 namespace LykkePublicAPI.Controllers
 {

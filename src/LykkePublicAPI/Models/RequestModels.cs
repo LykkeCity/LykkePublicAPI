@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Core.Domain.Candles;
+using Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Models
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Domain.OrderBook;
+using Lykke.Domain.Prices.Contracts;
 
 namespace Core.Services
 {

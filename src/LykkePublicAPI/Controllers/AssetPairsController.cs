@@ -35,7 +35,10 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("rate")]
         public async Task<IEnumerable<ApiAssetPairRateModel>> GetRate()
         {
+            var assetPairsIds = (await _assetPairDictionary.Values()).Where(x => !x.IsDisabled).Select(x => x.Id);
+
             var marketProfile = await _assetPairBestPriceRepository.GetAsync();
+            marketProfile.Profile = marketProfile.Profile.Where(x => assetPairsIds.Contains(x.Asset));
             return marketProfile.ToApiModel();
         }
 

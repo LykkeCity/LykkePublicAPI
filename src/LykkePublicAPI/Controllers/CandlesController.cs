@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Core.Domain.Candles;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Lykke.Domain.Prices.Contracts;
+using Lykke.Domain.Prices.Repositories;
 
 namespace LykkePublicAPI.Controllers
 {
     [Route("api/[controller]")]
     public class CandlesController : Controller
     {
-        private readonly IFeedCandlesRepository _feedCandlesRepository;
+        private readonly ICandleHistoryRepository _feedCandlesRepository;
 
-        public CandlesController(IFeedCandlesRepository feedCandlesRepository)
+        public CandlesController(ICandleHistoryRepository feedCandlesRepository)
         {
             _feedCandlesRepository = feedCandlesRepository;
         }
@@ -42,12 +42,12 @@ namespace LykkePublicAPI.Controllers
                 return BadRequest(ModelState.ToApiError());
             }
 
-            IEnumerable<IFeedCandle> candles = await _feedCandlesRepository.ReadCandlesAsync(
+            IEnumerable<IFeedCandle> candles = await _feedCandlesRepository.GetCandlesAsync(
                 assetPairId,
                 request.Period.Value.ToDomainModel(),
-                request.DateFrom.Value,
-                request.DateTo.Value,
-                isBuy: request.Type == PriceType.Bid);
+                isBuy: request.Type == PriceType.Bid,
+                from: request.DateFrom.Value,
+                to: request.DateTo.Value);
 
             var response = new CandlesHistoryResponse()
             {

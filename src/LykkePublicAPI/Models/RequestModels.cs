@@ -52,20 +52,20 @@ namespace LykkePublicAPI.Models
 
     public static class RequestsConvertorsExt
     {
-        public static FeedCandleType ToDomainModel(this Period candleType)
+        public static TimeInterval ToDomainModel(this Period candleType)
         {
             switch (candleType)
             {
                 case Period.Sec:
-                    return FeedCandleType.Sec;
+                    return TimeInterval.Sec;
                 case Period.Minute:
-                    return FeedCandleType.Minute;
+                    return TimeInterval.Minute;
                 case Period.Hour:
-                    return FeedCandleType.Hour;
+                    return TimeInterval.Hour;
                 case Period.Day:
-                    return FeedCandleType.Day;
+                    return TimeInterval.Day;
                 case Period.Month:
-                    return FeedCandleType.Month;
+                    return TimeInterval.Month;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(candleType), candleType, null);
             }

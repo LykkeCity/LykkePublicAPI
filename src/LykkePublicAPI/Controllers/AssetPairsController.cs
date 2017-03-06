@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Core.Domain.Assets;
-using Core.Domain.Candles;
 using Core.Domain.Feed;
 using Core.Feed;
 using LykkePublicAPI.Models;
+using Lykke.Domain.Prices.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LykkePublicAPI.Controllers
@@ -16,12 +16,12 @@ namespace LykkePublicAPI.Controllers
     {
         private readonly IAssetPairBestPriceRepository _assetPairBestPriceRepository;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairDictionary;
-        private readonly IFeedCandlesRepository _feedCandlesRepository;
+        private readonly ICandleHistoryRepository _feedCandlesRepository;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
 
         public AssetPairsController(IAssetPairBestPriceRepository assetPairBestPriceRepository,
             CachedDataDictionary<string, IAssetPair> assetPairDictionary,
-            IFeedCandlesRepository feedCandlesRepository, IFeedHistoryRepository feedHistoryRepository)
+            ICandleHistoryRepository feedCandlesRepository, IFeedHistoryRepository feedHistoryRepository)
         {
             _assetPairBestPriceRepository = assetPairBestPriceRepository;
             _assetPairDictionary = assetPairDictionary;
@@ -159,10 +159,10 @@ namespace LykkePublicAPI.Controllers
         public async Task<ApiAssetPairHistoryRateModel> GetHistoryRate([FromRoute]string assetPairId,
             [FromBody] AssetPairRateHistoryRequest request)
         {
-            var buyCandle = _feedCandlesRepository.ReadCandleAsync(assetPairId, request.Period.ToDomainModel(),
+            var buyCandle = _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
                 true, request.DateTime);
 
-            var sellCandle = _feedCandlesRepository.ReadCandleAsync(assetPairId, request.Period.ToDomainModel(),
+            var sellCandle = _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
                 false, request.DateTime);
 
             return Convertions.ToApiModel(assetPairId, await buyCandle, await sellCandle);

@@ -20,6 +20,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Services", "src\Services\Se
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{68D31CEB-637C-4C5D-B154-5086F305B241}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "submodules", "submodules", "{77C0D237-59D7-4D01-A43E-CD12777F9669}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AzureRepositories.Candles", "submodules\AzureRepositories.Candles\src\AzureRepositories.Candles\AzureRepositories.Candles.xproj", "{BC0C120B-30E2-4F30-9E20-73162E950A24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +46,10 @@ Global
 		{13636CE2-0B83-42BF-88C5-E162DE97A974}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13636CE2-0B83-42BF-88C5-E162DE97A974}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13636CE2-0B83-42BF-88C5-E162DE97A974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC0C120B-30E2-4F30-9E20-73162E950A24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC0C120B-30E2-4F30-9E20-73162E950A24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC0C120B-30E2-4F30-9E20-73162E950A24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC0C120B-30E2-4F30-9E20-73162E950A24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,5 +60,6 @@ Global
 		{4B78FB66-FFE0-43A4-A664-BDDD5D384979} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{13636CE2-0B83-42BF-88C5-E162DE97A974} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{68D31CEB-637C-4C5D-B154-5086F305B241} = {9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}
+		{BC0C120B-30E2-4F30-9E20-73162E950A24} = {77C0D237-59D7-4D01-A43E-CD12777F9669}
 	EndGlobalSection
 EndGlobal

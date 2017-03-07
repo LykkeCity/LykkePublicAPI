@@ -1,3 +1,3 @@
 [submodule "submodules/AzureRepositories.Candles"]
 	path = submodules/AzureRepositories.Candles
-	url = https://bitbucket.org/lykkewalletteam/azurerepositories.candles.git
+	url = git@bitbucket.org:lykkewalletteam/azurerepositories.candles.git

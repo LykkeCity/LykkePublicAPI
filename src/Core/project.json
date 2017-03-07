@@ -2,8 +2,8 @@
   "version": "1.0.0",
 
   "dependencies": {
-    "Lykke.Common": "1.1.2",
-    "Lykke.Domain.Prices": "0.3.0"
+    "Lykke.Common": "1.1.21",
+    "Lykke.Domain.Prices": "0.8.1"
   },
 
   "frameworks": {

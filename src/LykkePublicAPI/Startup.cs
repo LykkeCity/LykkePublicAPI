@@ -1,6 +1,8 @@
 ﻿using System.IO;
+using System.Linq;
 using AzureRepositories;
 using AzureRepositories.Assets;
+using AzureRepositories.Candles;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
@@ -9,19 +11,17 @@ using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Domain.Settings;
+using Core.Feed;
 using Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
-using System.Linq;
-using AzureRepositories.Candles;
-using Core.Domain.Candles;
-using Core.Feed;
-using Microsoft.Extensions.PlatformAbstractions;
+using Lykke.Domain.Prices.Repositories;
 
 namespace LykkePublicAPI
 {
@@ -61,8 +61,8 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
-            services.AddSingleton<IFeedCandlesRepository>(
-                new FeedCandlesRepository(new AzureTableStorage<FeedCandleEntity>(settings.Db.HLiquidityConnString,
+            services.AddSingleton<ICandleHistoryRepository>(
+                new CandleHistoryRepository(new AzureTableStorage<CandleTableEntity>(settings.Db.HLiquidityConnString,
                     "CandlesHistory", null)));
 
             services.AddSingleton<IFeedHistoryRepository>(

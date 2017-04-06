@@ -62,6 +62,11 @@ namespace LykkePublicAPI.Models
         public double Ask { get; set; }
     }
 
+    public class ApiMarketCapitalizationData
+    {
+        public double Amount { get; set; }
+    }
+
     public class CandleWithPairId
     {
         public string AssetPairId { get; set; }

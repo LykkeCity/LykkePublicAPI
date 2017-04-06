@@ -1,12 +1,14 @@
 ﻿using System.IO;
 using System.Linq;
 using AzureRepositories;
+using AzureRepositories.Accounts;
 using AzureRepositories.Assets;
 using AzureRepositories.Candles;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
 using Common;
+using Core.Domain.Accounts;
 using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
@@ -43,6 +45,8 @@ namespace LykkePublicAPI
         {
             var settings = GeneralSettingsReader.ReadGeneralSettings<BaseSettings>(Configuration["ConnectionString"]);
 
+            services.AddMemoryCache();
+
             services.AddSingleton(settings);
 
             services.AddSingleton<IAssetsRepository>(
@@ -68,6 +72,10 @@ namespace LykkePublicAPI
             services.AddSingleton<IFeedHistoryRepository>(
                 new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,
                     "FeedHistory", null)));
+
+            services.AddSingleton<IWalletsRepository>(
+                new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.Db.BalancesInfoConnString,
+                    "Accounts", null)));
 
             services.AddSingleton(x =>
             {
@@ -97,6 +105,7 @@ namespace LykkePublicAPI
             });
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
+            services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
 
             services.AddMvc();
 

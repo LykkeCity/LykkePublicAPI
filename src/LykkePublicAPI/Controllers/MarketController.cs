@@ -6,6 +6,7 @@ using Common;
 using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
+using Core.Services;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,14 +18,17 @@ namespace LykkePublicAPI.Controllers
         private readonly IMarketDataRepository _marketDataRepository;
         private readonly IAssetPairBestPriceRepository _marketProfileRepo;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDictionary;
+        private readonly IMarketCapitalizationService _marketCapitalizationService;
 
         public MarketController(IMarketDataRepository marketDataRepository,
             IAssetPairBestPriceRepository marketProfileRepo,
-            CachedDataDictionary<string, IAssetPair> assetPairsDictionary )
+            CachedDataDictionary<string, IAssetPair> assetPairsDictionary,
+            IMarketCapitalizationService marketCapitalizationService)
         {
             _marketDataRepository = marketDataRepository;
             _marketProfileRepo = marketProfileRepo;
             _assetPairsDictionary = assetPairsDictionary;
+            _marketCapitalizationService = marketCapitalizationService;
         }
 
         /// <summary>
@@ -71,6 +75,17 @@ namespace LykkePublicAPI.Controllers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get trade volume for asset
+        /// </summary>
+        [HttpGet("capitalization/{market}")]
+        public async Task<ApiMarketCapitalizationData> GetMarketCapitalization(string market)
+        {
+            var amount = await _marketCapitalizationService.GetCapitalization(market);
+
+            return new ApiMarketCapitalizationData {Amount = amount };
         }
     }
 }

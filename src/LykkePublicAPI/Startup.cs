@@ -36,6 +36,12 @@ namespace LykkePublicAPI
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
+            if (env.IsDevelopment())
+            {
+                builder.AddApplicationInsightsSettings(developerMode: true);
+            }
+
             Configuration = builder.Build();
         }
 
@@ -44,6 +50,8 @@ namespace LykkePublicAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var settings = GeneralSettingsReader.ReadGeneralSettings<BaseSettings>(Configuration["ConnectionString"]);
+
+            services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddMemoryCache();
 

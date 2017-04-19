@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Core.Domain.Assets;
-using Core.Domain.Feed;
 using Core.Feed;
+using Core.Services;
 using Lykke.Domain.Prices.Repositories;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,19 +14,20 @@ namespace LykkePublicAPI.Controllers
     [Route("api/[controller]")]
     public class AssetPairsController : Controller
     {
-        private readonly IAssetPairBestPriceRepository _assetPairBestPriceRepository;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairDictionary;
         private readonly ICandleHistoryRepository _feedCandlesRepository;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
+        private readonly IMarketProfileService _marketProfileService;
 
-        public AssetPairsController(IAssetPairBestPriceRepository assetPairBestPriceRepository,
+        public AssetPairsController(
             CachedDataDictionary<string, IAssetPair> assetPairDictionary,
-            ICandleHistoryRepository feedCandlesRepository, IFeedHistoryRepository feedHistoryRepository)
+            ICandleHistoryRepository feedCandlesRepository, IFeedHistoryRepository feedHistoryRepository,
+            IMarketProfileService marketProfileService)
         {
-            _assetPairBestPriceRepository = assetPairBestPriceRepository;
             _assetPairDictionary = assetPairDictionary;
             _feedCandlesRepository = feedCandlesRepository;
             _feedHistoryRepository = feedHistoryRepository;
+            _marketProfileService = marketProfileService;
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace LykkePublicAPI.Controllers
         {
             var assetPairsIds = (await _assetPairDictionary.Values()).Where(x => !x.IsDisabled).Select(x => x.Id);
 
-            var marketProfile = await _assetPairBestPriceRepository.GetAsync();
+            var marketProfile = await _marketProfileService.GetMarketProfileAsync();
             marketProfile.Profile = marketProfile.Profile.Where(x => assetPairsIds.Contains(x.Asset));
             return marketProfile.ToApiModel();
         }
@@ -48,7 +49,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("rate/{assetPairId}")]
         public async Task<ApiAssetPairRateModel> GetRate(string assetPairId)
         {
-            return (await _assetPairBestPriceRepository.GetAsync(assetPairId))?.ToApiModel();
+            return (await _marketProfileService.GetFeedDataAsync(assetPairId))?.ToApiModel();
         }
 
         /// <summary>

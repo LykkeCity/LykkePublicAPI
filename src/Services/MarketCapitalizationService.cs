@@ -36,7 +36,9 @@ namespace Services
             {
                 CacheRecord record;
 
-                if (!_memCache.TryGetValue(MarketCapitalizationCacheKey, out record))
+                var cacheKey = GetMarketCapitalizationCacheKey(market);
+
+                if (!_memCache.TryGetValue(cacheKey, out record))
                 {
                     double amount = 0;
 
@@ -62,15 +64,20 @@ namespace Services
                     record.Amount = amount;
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions()
-                        .SetSlidingExpiration(_cacheExpTime);
+                        .SetAbsoluteExpiration(_cacheExpTime);
 
-                    _memCache.Set(MarketCapitalizationCacheKey, record, cacheEntryOptions);
+                    _memCache.Set(cacheKey, record, cacheEntryOptions);
                 }
 
                 return record.Amount;
             }
 
             return 0;
+        }
+
+        private static string GetMarketCapitalizationCacheKey(string market)
+        {
+            return string.Format(MarketCapitalizationCacheKey, market);
         }
     }
 }

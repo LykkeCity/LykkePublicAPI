@@ -106,6 +106,7 @@ namespace LykkePublicAPI
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
+            services.AddTransient<IMarketProfileService, MarketProfileService>();
 
             services.AddMvc();
 

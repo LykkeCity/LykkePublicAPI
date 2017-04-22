@@ -1,28 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70EE310D-63BA-4816-957A-DB5997E2C654}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LykkePublicAPI", "src\LykkePublicAPI\LykkePublicAPI.xproj", "{C39C2F7E-428A-458A-BF3D-AF6239371E27}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Core", "src\Core\Core.xproj", "{E212D432-2079-472A-A9FC-509818387049}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AzureRepositories", "src\AzureRepositories\AzureRepositories.xproj", "{4B78FB66-FFE0-43A4-A664-BDDD5D384979}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Services", "src\Services\Services.xproj", "{13636CE2-0B83-42BF-88C5-E162DE97A974}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{68D31CEB-637C-4C5D-B154-5086F305B241}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Submodules", "Submodules", "{250C2853-58D0-4AF8-A3D2-846A847A539E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AzureRepositories.Candles", "submodules\AzureRepositories.Candles\src\AzureRepositories.Candles\AzureRepositories.Candles.xproj", "{BC0C120B-30E2-4F30-9E20-73162E950A24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LykkePublicAPI", "src\LykkePublicAPI\LykkePublicAPI.csproj", "{C39C2F7E-428A-458A-BF3D-AF6239371E27}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\Core.csproj", "{E212D432-2079-472A-A9FC-509818387049}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureRepositories", "src\AzureRepositories\AzureRepositories.csproj", "{4B78FB66-FFE0-43A4-A664-BDDD5D384979}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "src\Services\Services.csproj", "{13636CE2-0B83-42BF-88C5-E162DE97A974}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureRepositories.Candles", "submodules\AzureRepositories.Candles\src\AzureRepositories.Candles\AzureRepositories.Candles.csproj", "{BC0C120B-30E2-4F30-9E20-73162E950A24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,11 +52,11 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{68D31CEB-637C-4C5D-B154-5086F305B241} = {9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}
 		{C39C2F7E-428A-458A-BF3D-AF6239371E27} = {9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}
 		{E212D432-2079-472A-A9FC-509818387049} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{4B78FB66-FFE0-43A4-A664-BDDD5D384979} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{13636CE2-0B83-42BF-88C5-E162DE97A974} = {68D31CEB-637C-4C5D-B154-5086F305B241}
-		{68D31CEB-637C-4C5D-B154-5086F305B241} = {9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}
 		{BC0C120B-30E2-4F30-9E20-73162E950A24} = {250C2853-58D0-4AF8-A3D2-846A847A539E}
 	EndGlobalSection
 EndGlobal

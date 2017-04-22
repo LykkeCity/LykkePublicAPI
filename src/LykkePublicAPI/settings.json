@@ -1,0 +1,19 @@
+﻿
+{
+  "PublicApi": 
+  {
+    "Db": {
+      "HTradesConnString": "UseDevelopmentStorage=true",
+      "BalancesInfoConnString": "UseDevelopmentStorage=true",
+      "HLiquidityConnString": "UseDevelopmentStorage=true",
+      "DictsConnString": "UseDevelopmentStorage=true",
+      "LogsConnString": "UseDevelopmentStorage=true"
+    },
+    "CacheSettings": {
+      "FinanceDataCacheInstance": "FinanceDataCacheInstance",
+      "RedisConfiguration": "",
+      "OrderBooksCacheKeyPattern": "__OrderBooks_{0}_{1}__"
+    },
+    "CrossdomainOrigins": []
+  }
+}

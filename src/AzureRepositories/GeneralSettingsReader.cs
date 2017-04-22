@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Net.Http;
+using System.Text;
 using AzureStorage.Blob;
 using Common;
 
@@ -6,13 +9,19 @@ namespace AzureRepositories
 {
     public static class GeneralSettingsReader
     {
-        public static T ReadGeneralSettings<T>(string connectionString)
+        public static T ReadGeneralSettings<T>(string url)
         {
-            var settingsStorage = new AzureBlobStorage(connectionString);
-            var settingsData = settingsStorage.GetAsync("settings", "generalsettings.json").Result.ToBytes();
-            var str = Encoding.UTF8.GetString(settingsData);
+            var httpClient = new HttpClient {BaseAddress = new Uri(url)};
+            var settingsData = httpClient.GetStringAsync("").Result;
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(settingsData);
+        }
+
+        public static T ReadGeneralSettingsLocal<T>(string path)
+        {
+            var content = File.ReadAllText(path);
+
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(content);
         }
     }
 }

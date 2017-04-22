@@ -49,7 +49,11 @@ namespace LykkePublicAPI
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var settings = GeneralSettingsReader.ReadGeneralSettings<BaseSettings>(Configuration["ConnectionString"]);
+#if DEBUG
+            var settings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]).PublicApi;
+#else
+            var settings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]).PublicApi;
+#endif
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -144,7 +148,7 @@ namespace LykkePublicAPI
                 options.AddPolicy("Lykke", builder =>
                 {
                     builder
-                        .WithOrigins(settings.PublicApiSettings.CrossdomainOrigins)
+                        .WithOrigins(settings.CrossdomainOrigins)
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });

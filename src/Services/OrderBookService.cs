@@ -13,11 +13,11 @@ namespace Services
     public class OrderBookService : IOrderBooksService
     {
         private readonly IDistributedCache _distributedCache;
-        private readonly BaseSettings _settings;
+        private readonly PublicApiSettings _settings;
         private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
 
         public OrderBookService(IDistributedCache distributedCache,
-            BaseSettings settings,
+            PublicApiSettings settings,
             CachedDataDictionary<string, IAssetPair> assetPairsDict)
         {
             _distributedCache = distributedCache;

@@ -13,7 +13,7 @@ namespace Services
 
         private const string MarketProfileCacheKey = "_MarketProfile_";
         private const string MarketProfileByPairCacheKey = "_MarketProfileByPair_{0}_";
-        private readonly TimeSpan _cacheExpTime = TimeSpan.FromSeconds(30);
+        private readonly TimeSpan _cacheExpTime = TimeSpan.FromSeconds(2);
 
         public MarketProfileService(IAssetPairBestPriceRepository assetPairBestPriceRepository,
             IMemoryCache memoryCache)

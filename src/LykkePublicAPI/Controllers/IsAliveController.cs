@@ -13,14 +13,14 @@ namespace LykkePublicAPI.Controllers
             {
                 Version =
                     Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Environment = Environment.GetEnvironmentVariable("ENVIRONMENT_INFO")
+                Env = Environment.GetEnvironmentVariable("ENV_INFO")
             };
         }
 
         public class IsAliveResponse
         {
             public string Version { get; set; }
-            public string Environment { get; set; }
+            public string Env { get; set; }
         }
     }
 }

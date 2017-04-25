@@ -1,7 +1,6 @@
 ﻿
 {
-  "PublicApi": 
-  {
+  "PublicApi": {
     "Db": {
       "HTradesConnString": "UseDevelopmentStorage=true",
       "BalancesInfoConnString": "UseDevelopmentStorage=true",
@@ -14,6 +13,10 @@
       "RedisConfiguration": "",
       "OrderBooksCacheKeyPattern": "__OrderBooks_{0}_{1}__"
     },
-    "CrossdomainOrigins": []
+    "CrossdomainOrigins": [],
+    "CompanyInfo": {
+      "LkkTotalAmount": 1285690000,
+      "LkkCompanyTreasuryAmount": 52506403
+    }
   }
 }

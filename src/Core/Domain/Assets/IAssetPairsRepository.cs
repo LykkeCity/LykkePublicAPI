@@ -90,6 +90,11 @@ namespace Core.Domain.Assets
                 (itm.BaseAssetId == assetId1 && itm.QuotingAssetId == assetId2) ||
                 (itm.BaseAssetId == assetId2 && itm.QuotingAssetId == assetId1));
         }
+
+        public static bool IsInverted(this IAssetPair assetPair, string targetAsset)
+        {
+            return assetPair.QuotingAssetId == targetAsset;
+        }
     }
 
 }

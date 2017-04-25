@@ -10,6 +10,13 @@
         public DbSettings Db { get; set; }
         public CacheSettings CacheSettings { get; set; }
         public string[] CrossdomainOrigins { get; set; }
+        public LykkeCompanyData CompanyInfo { get; set; }
+    }
+
+    public class LykkeCompanyData
+    {
+        public double LkkTotalAmount { get; set; }
+        public double LkkCompanyTreasuryAmount { get; set; }
     }
 
     public class DbSettings

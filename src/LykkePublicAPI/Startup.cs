@@ -60,6 +60,7 @@ namespace LykkePublicAPI
             services.AddMemoryCache();
 
             services.AddSingleton(settings);
+            services.AddSingleton(settings.CompanyInfo);
 
             services.AddSingleton<IAssetsRepository>(
                 new AssetsRepository(new AzureTableStorage<AssetEntity>(settings.Db.DictsConnString, "Dictionaries",
@@ -119,6 +120,7 @@ namespace LykkePublicAPI
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
             services.AddTransient<IMarketProfileService, MarketProfileService>();
+            services.AddTransient<ISrvRatesHelper, SrvRateHelper>();
 
             services.AddMvc();
 

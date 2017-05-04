@@ -150,7 +150,7 @@ namespace LykkePublicAPI
                 options.AddPolicy("Lykke", builder =>
                 {
                     builder
-                        .WithOrigins(settings.CrossdomainOrigins)
+                        .AllowAnyOrigin() //cors is now handled on application server
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });

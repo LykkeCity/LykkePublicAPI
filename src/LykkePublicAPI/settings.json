@@ -6,7 +6,10 @@
       "BalancesInfoConnString": "UseDevelopmentStorage=true",
       "HLiquidityConnString": "UseDevelopmentStorage=true",
       "DictsConnString": "UseDevelopmentStorage=true",
-      "LogsConnString": "UseDevelopmentStorage=true"
+      "LogsConnString": "UseDevelopmentStorage=true",
+      "AssetConnections": {
+        "eurusd": "UseDevelopmentStorage=true"
+      }
     },
     "CacheSettings": {
       "FinanceDataCacheInstance": "FinanceDataCacheInstance",

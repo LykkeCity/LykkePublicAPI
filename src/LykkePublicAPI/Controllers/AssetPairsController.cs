@@ -8,6 +8,8 @@ using Core.Services;
 using Lykke.Domain.Prices.Repositories;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Lykke.Domain.Prices.Contracts;
+using Prices = Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Controllers
 {
@@ -160,13 +162,22 @@ namespace LykkePublicAPI.Controllers
         public async Task<ApiAssetPairHistoryRateModel> GetHistoryRate([FromRoute]string assetPairId,
             [FromBody] AssetPairRateHistoryRequest request)
         {
-            var buyCandle = _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
-                true, request.DateTime);
+            IFeedCandle buyCandle = null;
+            IFeedCandle sellCandle = null;
+            try
+            {
+                buyCandle = await _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
+                    Prices.PriceType.Bid, request.DateTime);
 
-            var sellCandle = _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
-                false, request.DateTime);
+                sellCandle = await _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
+                    Prices.PriceType.Ask, request.DateTime);
+            }
+            catch (AppSettingException)
+            {
+                // TODO: Log absent connection string for the specified assetPairId
+            }
 
-            return Convertions.ToApiModel(assetPairId, await buyCandle, await sellCandle);
+            return Convertions.ToApiModel(assetPairId, buyCandle, sellCandle);
         }
     }
 }

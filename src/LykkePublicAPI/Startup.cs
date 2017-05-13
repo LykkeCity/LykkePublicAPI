@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AzureRepositories;
 using AzureRepositories.Accounts;
@@ -54,6 +56,8 @@ namespace LykkePublicAPI
 #else
             var settings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]).PublicApi;
 #endif
+            // Ignore case of asset in asset connections
+            settings.Db.AssetConnections = new Dictionary<string, string>(settings.Db.AssetConnections, StringComparer.OrdinalIgnoreCase);
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -78,9 +82,17 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
-            services.AddSingleton<ICandleHistoryRepository>(
-                new CandleHistoryRepository(new AzureTableStorage<CandleTableEntity>(settings.Db.HLiquidityConnString,
-                    "CandlesHistory", null)));
+            services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
+            {
+                string connString;
+                if (!settings.Db.AssetConnections.TryGetValue(asset, out connString)
+                    || string.IsNullOrEmpty(connString))
+                {
+                    throw new AppSettingException(string.Format("Connection string for asset pair '{0}' is not specified.", asset));
+                }
+
+                return new AzureTableStorage<CandleTableEntity>(connString, tableName, null);
+            }));
 
             services.AddSingleton<IFeedHistoryRepository>(
                 new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,

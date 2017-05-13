@@ -1,4 +1,6 @@
-﻿namespace Core.Domain.Settings
+﻿using System.Collections.Generic;
+
+namespace Core.Domain.Settings
 {
     public class Settings
     {
@@ -26,6 +28,8 @@
         public string HLiquidityConnString { get; set; }
         public string DictsConnString { get; set; }
         public string LogsConnString { get; set; }
+        public IDictionary<string, string> AssetConnections { get; set; } = new Dictionary<string, string>();
+
     }
 
     public class CacheSettings

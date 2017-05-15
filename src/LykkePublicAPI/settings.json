@@ -1,5 +1,4 @@
-﻿
-{
+﻿{
   "PublicApi": {
     "Db": {
       "HTradesConnString": "UseDevelopmentStorage=true",
@@ -18,5 +17,8 @@
       "LkkTotalAmount": 1285690000,
       "LkkCompanyTreasuryAmount": 52506403
     }
+  },
+  "CandleHistoryAssetConnections": {
+    "eurusd": "UseDevelopmentStorage=true"
   }
 }

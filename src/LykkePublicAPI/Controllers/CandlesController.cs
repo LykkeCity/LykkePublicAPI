@@ -5,6 +5,7 @@ using LykkePublicAPI.Models;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.Domain.Prices.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Prices = Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Controllers
 {
@@ -42,12 +43,21 @@ namespace LykkePublicAPI.Controllers
                 return BadRequest(ModelState.ToApiError());
             }
 
-            IEnumerable<IFeedCandle> candles = await _feedCandlesRepository.GetCandlesAsync(
-                assetPairId,
-                request.Period.Value.ToDomainModel(),
-                isBuy: request.Type == PriceType.Bid,
-                from: request.DateFrom.Value,
-                to: request.DateTo.Value);
+            IEnumerable<IFeedCandle> candles = new List<IFeedCandle>();
+
+            try
+            {
+                candles = await _feedCandlesRepository.GetCandlesAsync(
+                    assetPairId,
+                    request.Period.Value.ToDomainModel(),
+                    priceType: request.Type.HasValue ? request.Type.Value.ToDomainModel() : Prices.PriceType.Ask,
+                    from: request.DateFrom.Value,
+                    to: request.DateTo.Value);
+            }
+            catch (AppSettingException)
+            {
+                // TODO: Log absent connection string for the specified assetPairId
+            }
 
             var response = new CandlesHistoryResponse()
             {

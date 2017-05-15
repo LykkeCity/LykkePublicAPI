@@ -15,8 +15,9 @@ namespace LykkePublicAPI.Models
 
     public enum PriceType
     {
-        Ask = 1,
-        Bid = 2
+        Bid = 1,
+        Ask = 2,
+        Mid = 3
     }
 
     public class AssetPairsRateHistoryRequest
@@ -69,6 +70,11 @@ namespace LykkePublicAPI.Models
                 default:
                     throw new ArgumentOutOfRangeException(nameof(candleType), candleType, null);
             }
+        }
+
+        public static Lykke.Domain.Prices.PriceType ToDomainModel(this PriceType type)
+        {
+            return (Lykke.Domain.Prices.PriceType)type;
         }
     }
 }

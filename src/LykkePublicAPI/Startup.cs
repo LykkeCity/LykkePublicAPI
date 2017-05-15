@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AzureRepositories;
 using AzureRepositories.Accounts;
@@ -50,10 +52,15 @@ namespace LykkePublicAPI
         public void ConfigureServices(IServiceCollection services)
         {
 #if DEBUG
-            var settings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]).PublicApi;
+            var generalSettings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]);
 #else
-            var settings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]).PublicApi;
+            var generalSettings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]);
 #endif
+            var settings = generalSettings.PublicApi;
+
+            // Ignore case of asset in asset connections
+            generalSettings.CandleHistoryAssetConnections = 
+                new Dictionary<string, string>(generalSettings.CandleHistoryAssetConnections, StringComparer.OrdinalIgnoreCase);
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -78,9 +85,17 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
-            services.AddSingleton<ICandleHistoryRepository>(
-                new CandleHistoryRepository(new AzureTableStorage<CandleTableEntity>(settings.Db.HLiquidityConnString,
-                    "CandlesHistory", null)));
+            services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
+            {
+                string connString;
+                if (!generalSettings.CandleHistoryAssetConnections.TryGetValue(asset, out connString)
+                    || string.IsNullOrEmpty(connString))
+                {
+                    throw new AppSettingException(string.Format("Connection string for asset pair '{0}' is not specified.", asset));
+                }
+
+                return new AzureTableStorage<CandleTableEntity>(connString, tableName, null);
+            }));
 
             services.AddSingleton<IFeedHistoryRepository>(
                 new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,

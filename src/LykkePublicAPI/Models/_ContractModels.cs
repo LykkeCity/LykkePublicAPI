@@ -165,8 +165,8 @@ namespace LykkePublicAPI.Models
             return new ApiAssetPairHistoryRateModel
             {
                 Id = assetPairId,
-                Ask = sellCandle.Close,
-                Bid = buyCandle.Close
+                Ask = sellCandle?.Close,
+                Bid = buyCandle?.Close
             };
         }
 

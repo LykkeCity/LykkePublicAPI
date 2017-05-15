@@ -1,15 +1,11 @@
-﻿
-{
+﻿{
   "PublicApi": {
     "Db": {
       "HTradesConnString": "UseDevelopmentStorage=true",
       "BalancesInfoConnString": "UseDevelopmentStorage=true",
       "HLiquidityConnString": "UseDevelopmentStorage=true",
       "DictsConnString": "UseDevelopmentStorage=true",
-      "LogsConnString": "UseDevelopmentStorage=true",
-      "AssetConnections": {
-        "eurusd": "UseDevelopmentStorage=true"
-      }
+      "LogsConnString": "UseDevelopmentStorage=true"
     },
     "CacheSettings": {
       "FinanceDataCacheInstance": "FinanceDataCacheInstance",
@@ -21,5 +17,8 @@
       "LkkTotalAmount": 1285690000,
       "LkkCompanyTreasuryAmount": 52506403
     }
+  },
+  "CandleHistoryAssetConnections": {
+    "eurusd": "UseDevelopmentStorage=true"
   }
 }

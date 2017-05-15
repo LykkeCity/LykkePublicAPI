@@ -52,12 +52,15 @@ namespace LykkePublicAPI
         public void ConfigureServices(IServiceCollection services)
         {
 #if DEBUG
-            var settings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]).PublicApi;
+            var generalSettings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]);
 #else
-            var settings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]).PublicApi;
+            var generalSettings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]);
 #endif
+            var settings = generalSettings.PublicApi;
+
             // Ignore case of asset in asset connections
-            settings.Db.AssetConnections = new Dictionary<string, string>(settings.Db.AssetConnections, StringComparer.OrdinalIgnoreCase);
+            generalSettings.CandleHistoryAssetConnections = 
+                new Dictionary<string, string>(generalSettings.CandleHistoryAssetConnections, StringComparer.OrdinalIgnoreCase);
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -85,7 +88,7 @@ namespace LykkePublicAPI
             services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
             {
                 string connString;
-                if (!settings.Db.AssetConnections.TryGetValue(asset, out connString)
+                if (!generalSettings.CandleHistoryAssetConnections.TryGetValue(asset, out connString)
                     || string.IsNullOrEmpty(connString))
                 {
                     throw new AppSettingException(string.Format("Connection string for asset pair '{0}' is not specified.", asset));

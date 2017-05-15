@@ -15,8 +15,8 @@ namespace LykkePublicAPI.Models
 
     public enum PriceType
     {
-        Ask = 1,
-        Bid = 2,
+        Bid = 1,
+        Ask = 2,
         Mid = 3
     }
 

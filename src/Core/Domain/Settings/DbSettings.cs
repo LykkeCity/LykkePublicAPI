@@ -5,6 +5,7 @@ namespace Core.Domain.Settings
     public class Settings
     {
         public PublicApiSettings PublicApi { get; set; }
+        public IDictionary<string, string> CandleHistoryAssetConnections { get; set; } = new Dictionary<string, string>();
     }
 
     public class PublicApiSettings
@@ -28,7 +29,6 @@ namespace Core.Domain.Settings
         public string HLiquidityConnString { get; set; }
         public string DictsConnString { get; set; }
         public string LogsConnString { get; set; }
-        public IDictionary<string, string> AssetConnections { get; set; } = new Dictionary<string, string>();
 
     }
 

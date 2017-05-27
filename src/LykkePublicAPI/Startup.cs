@@ -159,17 +159,6 @@ namespace LykkePublicAPI
                 var xmlPath = Path.Combine(basePath, "LykkePublicAPI.xml");
                 options.IncludeXmlComments(xmlPath);
             });
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy("Lykke", builder =>
-                {
-                    builder
-                        .AllowAnyOrigin() //cors is now handled on application server
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

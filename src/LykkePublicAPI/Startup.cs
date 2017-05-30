@@ -26,6 +26,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
 {
@@ -164,7 +165,15 @@ namespace LykkePublicAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseCors("Lykke");
+            app.Use(async (context, func) =>
+            {
+                if (context.Request.Method == "OPTIONS")
+                {
+                    context.Response.StatusCode = 200;
+                    await context.Response.WriteAsync("");
+                    return;
+                }
+            });
 
             app.UseStaticFiles();
 

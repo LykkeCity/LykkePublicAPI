@@ -165,14 +165,15 @@ namespace LykkePublicAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.Use(async (context, func) =>
+            app.Use(async (context, next) =>
             {
                 if (context.Request.Method == "OPTIONS")
                 {
                     context.Response.StatusCode = 200;
                     await context.Response.WriteAsync("");
-                    return;
                 }
+
+                await next.Invoke();
             });
 
             app.UseStaticFiles();

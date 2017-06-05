@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.8" />
     <PackageReference Include="protobuf-net" Version="2.1.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
   </ItemGroup>

@@ -1,11 +1,12 @@
-﻿using System.Threading.Tasks;
-using Core.Domain.Feed;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Lykke.MarketProfileService.Client.Models;
 
 namespace Core.Services
 {
     public interface IMarketProfileService
     {
-        Task<MarketProfile> GetMarketProfileAsync();
-        Task<IFeedData> GetFeedDataAsync(string assetPairId);
+        Task<AssetPairModel> TryGetPairAsync(string assetPairId);
+        Task<IList<AssetPairModel>> GetAllPairsAsync();
     }
 }

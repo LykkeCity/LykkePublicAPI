@@ -1,66 +1,33 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Domain.Feed;
 using Core.Services;
-using Microsoft.Extensions.Caching.Memory;
+using Lykke.MarketProfileService.Client;
+using Lykke.MarketProfileService.Client.Models;
 
 namespace Services
 {
     public class MarketProfileService : IMarketProfileService
     {
-        private readonly IAssetPairBestPriceRepository _assetPairBestPriceRepository;
-        private readonly IMemoryCache _memoryCache;
+        private readonly ILykkeMarketProfileServiceAPI _api;
 
-        private const string MarketProfileCacheKey = "_MarketProfile_";
-        private const string MarketProfileByPairCacheKey = "_MarketProfileByPair_{0}_";
-        private readonly TimeSpan _cacheExpTime = TimeSpan.FromSeconds(2);
-
-        public MarketProfileService(IAssetPairBestPriceRepository assetPairBestPriceRepository,
-            IMemoryCache memoryCache)
+        public MarketProfileService(ILykkeMarketProfileServiceAPI api)
         {
-            _assetPairBestPriceRepository = assetPairBestPriceRepository;
-            _memoryCache = memoryCache;
+            _api = api;
         }
 
-        public async Task<MarketProfile> GetMarketProfileAsync()
+        public async Task<AssetPairModel> TryGetPairAsync(string assetPairId)
         {
-            MarketProfile record;
-
-            if (!_memoryCache.TryGetValue(MarketProfileCacheKey, out record))
-            {
-                record = await _assetPairBestPriceRepository.GetAsync();
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetAbsoluteExpiration(_cacheExpTime);
-
-                _memoryCache.Set(MarketProfileCacheKey, record, cacheEntryOptions);
-            }
-
-            return record;
+            return await _api.TryGetAssetPairAsync(assetPairId);
         }
 
-        public async Task<IFeedData> GetFeedDataAsync(string assetPairId)
+        public async Task<IList<AssetPairModel>> GetAllPairsAsync()
         {
-            IFeedData record;
-
-            var cacheKey = GetMarketProfileCacheKey(assetPairId);
-
-            if (!_memoryCache.TryGetValue(cacheKey, out record))
-            {
-                record = await _assetPairBestPriceRepository.GetAsync(assetPairId);
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetAbsoluteExpiration(_cacheExpTime);
-
-                _memoryCache.Set(cacheKey, record, cacheEntryOptions);
-            }
-
-            return record;
+            return await _api.ApiMarketProfileGetAsync();
         }
 
-        private static string GetMarketProfileCacheKey(string assetPairId)
+        public void Dispose()
         {
-            return string.Format(MarketProfileByPairCacheKey, assetPairId);
+            _api?.Dispose();
         }
     }
 }

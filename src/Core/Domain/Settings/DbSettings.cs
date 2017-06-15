@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Core.Domain.Settings
 {
@@ -14,6 +15,12 @@ namespace Core.Domain.Settings
         public CacheSettings CacheSettings { get; set; }
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
+        public PrivateApiSettings PrivateApi { get; set; }
+    }
+
+    public class PrivateApiSettings
+    {
+        public Uri DutchAuctionServiceUri { get; set; }
     }
 
     public class PrivateApiSettings

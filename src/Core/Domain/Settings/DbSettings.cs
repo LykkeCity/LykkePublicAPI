@@ -23,6 +23,12 @@ namespace Core.Domain.Settings
         public Uri DutchAuctionServiceUri { get; set; }
     }
 
+    public class PrivateApiSettings
+    {
+        public Uri DutchAuctionServiceUri { get; set; }
+        public Uri MarketProfileServiceUri { get; set; }
+    }
+
     public class LykkeCompanyData
     {
         public double LkkTotalAmount { get; set; }

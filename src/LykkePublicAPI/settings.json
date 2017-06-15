@@ -7,6 +7,9 @@
       "DictsConnString": "UseDevelopmentStorage=true",
       "LogsConnString": "UseDevelopmentStorage=true"
     },
+    "PrivateApi": {
+      "DutchAuctionServiceUri": "http://13.93.116.252:5020"
+    },
     "CacheSettings": {
       "FinanceDataCacheInstance": "FinanceDataCacheInstance",
       "RedisConfiguration": "",

@@ -4,10 +4,13 @@
       "HTradesConnString": "UseDevelopmentStorage=true",
       "BalancesInfoConnString": "UseDevelopmentStorage=true",
       "HLiquidityConnString": "UseDevelopmentStorage=true",
-      "DictsConnString": "UseDevelopmentStorage=true",
       "LogsConnString": "UseDevelopmentStorage=true"
     },
     "PrivateApi": {
+      "AssetsService": {
+        "Uri": "http://13.93.116.252:5080",
+        "CacheExpirationPeriod": "00:01:00"
+      },
       "DutchAuctionServiceUri": "http://13.93.116.252:5020",
       "MarketProfileServiceUri": "http://13.93.116.252:5030"
     },

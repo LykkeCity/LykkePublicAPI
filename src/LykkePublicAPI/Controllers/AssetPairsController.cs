@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Core.Domain.Assets;
 using Core.Feed;
 using Core.Services;
 using Lykke.Domain.Prices.Repositories;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Lykke.Domain.Prices.Contracts;
+using Lykke.Service.Assets.Client.Custom;
 using Prices = Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Controllers
@@ -16,18 +15,18 @@ namespace LykkePublicAPI.Controllers
     [Route("api/[controller]")]
     public class AssetPairsController : Controller
     {
-        private readonly CachedDataDictionary<string, IAssetPair> _assetPairDictionary;
+        private readonly ICachedAssetsService _assetsService;
         private readonly ICandleHistoryRepository _feedCandlesRepository;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
         private readonly IMarketProfileService _marketProfileService;
 
         public AssetPairsController(
-            CachedDataDictionary<string, IAssetPair> assetPairDictionary,
+            ICachedAssetsService assetsService,
             ICandleHistoryRepository feedCandlesRepository, 
             IFeedHistoryRepository feedHistoryRepository,
             IMarketProfileService marketProfileService)
         {
-            _assetPairDictionary = assetPairDictionary;
+            _assetsService = assetsService;
             _feedCandlesRepository = feedCandlesRepository;
             _feedHistoryRepository = feedHistoryRepository;
             _marketProfileService = marketProfileService;
@@ -39,7 +38,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("rate")]
         public async Task<IEnumerable<ApiAssetPairRateModel>> GetRate()
         {
-            var assetPairsIds = (await _assetPairDictionary.Values())
+            var assetPairsIds = (await _assetsService.GetAllAssetPairsAsync())
                 .Where(x => !x.IsDisabled)
                 .Select(x => x.Id)
                 .ToArray();
@@ -66,7 +65,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("dictionary")]
         public async Task<IEnumerable<ApiAssetPair>> GetDictionary()
         {
-            var pairs = (await _assetPairDictionary.Values()).Where(x => !x.IsDisabled);
+            var pairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
 
             return pairs.ToApiModel();
         }
@@ -97,7 +96,7 @@ namespace LykkePublicAPI.Controllers
                 return
                     BadRequest(new ApiError { Code = ErrorCodes.InvalidInput, Msg = "Sorry, only day candles are available (temporary)." });
 
-            var pairs = (await _assetPairDictionary.Values()).Where(x => !x.IsDisabled);
+            var pairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
 
             if (request.AssetPairIds.Any(x => !pairs.Select(y => y.Id).Contains(x)))
                 return

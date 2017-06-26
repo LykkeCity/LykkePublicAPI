@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using AzureRepositories;
 using AzureRepositories.Accounts;
-using AzureRepositories.Assets;
 using AzureRepositories.Candles;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
-using Common;
 using Core.Domain.Accounts;
-using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Domain.Settings;
@@ -27,6 +23,7 @@ using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
 using Lykke.MarketProfileService.Client;
+using Lykke.Service.Assets.Client.Custom;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -71,13 +68,7 @@ namespace LykkePublicAPI
             services.AddSingleton(settings);
             services.AddSingleton(settings.CompanyInfo);
 
-            services.AddSingleton<IAssetsRepository>(
-                new AssetsRepository(new AzureTableStorage<AssetEntity>(settings.Db.DictsConnString, "Dictionaries",
-                    null)));
-
-            services.AddSingleton<IAssetPairsRepository>(
-                new AssetPairsRepository(new AzureTableStorage<AssetPairEntity>(settings.Db.DictsConnString, "Dictionaries",
-                    null)));
+            services.UseAssetsClient(AssetServiceSettings.Create(settings.PrivateApi.AssetsService.Uri, settings.PrivateApi.AssetsService.CacheExpirationPeriod));
 
             services.AddSingleton<IAssetPairBestPriceRepository>(
                 new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.Db.HLiquidityConnString,
@@ -106,27 +97,6 @@ namespace LykkePublicAPI
             services.AddSingleton<IWalletsRepository>(
                 new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.Db.BalancesInfoConnString,
                     "Accounts", null)));
-
-            services.AddSingleton(x =>
-            {
-                var assetPairsRepository = (IAssetPairsRepository)x.GetService(typeof(IAssetPairsRepository));
-                return new CachedDataDictionary<string, IAssetPair>(
-                    async () => (await assetPairsRepository.GetAllAsync()).ToDictionary(itm => itm.Id));
-            });
-
-            services.AddSingleton(x =>
-            {
-                var assetRepository = (IAssetsRepository) x.GetService(typeof(IAssetsRepository));
-                return new CachedDataDictionary<string, IAsset>(
-                    async () => (await assetRepository.GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            });
-
-            services.AddSingleton(x =>
-            {
-                var assetsRepo = (IAssetsRepository)x.GetService(typeof(IAssetsRepository));
-                return new CachedDataDictionary<string, IAsset>(
-                    async () => (await assetsRepo.GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            });
 
             services.AddSingleton<IDutchAuctionService>(x => new DutchAuctionService(settings.PrivateApi.DutchAuctionServiceUri));
 

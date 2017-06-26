@@ -20,8 +20,15 @@ namespace Core.Domain.Settings
 
     public class PrivateApiSettings
     {
+        public AssetsServiceSettings AssetsService { get; set; }
         public Uri DutchAuctionServiceUri { get; set; }
         public Uri MarketProfileServiceUri { get; set; }
+    }
+
+    public class AssetsServiceSettings
+    {
+        public Uri Uri { get; set; }
+        public TimeSpan CacheExpirationPeriod { get; set; }
     }
 
     public class LykkeCompanyData
@@ -35,9 +42,7 @@ namespace Core.Domain.Settings
         public string HTradesConnString { get; set; }
         public string BalancesInfoConnString { get; set; }
         public string HLiquidityConnString { get; set; }
-        public string DictsConnString { get; set; }
         public string LogsConnString { get; set; }
-
     }
 
     public class CacheSettings

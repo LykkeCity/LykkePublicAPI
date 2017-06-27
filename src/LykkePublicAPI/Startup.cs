@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using AzureRepositories;
 using AzureRepositories.Accounts;
-using AzureRepositories.Candles;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
@@ -21,9 +18,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
-using Lykke.Domain.Prices.Repositories;
 using Lykke.MarketProfileService.Client;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.CandlesHistory.Client;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -57,10 +54,6 @@ namespace LykkePublicAPI
 #endif
             var settings = generalSettings.PublicApi;
 
-            // Ignore case of asset in asset connections
-            generalSettings.CandleHistoryAssetConnections = 
-                new Dictionary<string, string>(generalSettings.CandleHistoryAssetConnections, StringComparer.OrdinalIgnoreCase);
-
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddMemoryCache();
@@ -78,17 +71,7 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
-            services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
-            {
-                string connString;
-                if (!generalSettings.CandleHistoryAssetConnections.TryGetValue(asset, out connString)
-                    || string.IsNullOrEmpty(connString))
-                {
-                    throw new AppSettingException(string.Format("Connection string for asset pair '{0}' is not specified.", asset));
-                }
-
-                return new AzureTableStorage<CandleTableEntity>(connString, tableName, null);
-            }));
+            services.AddSingleton<ICandleshistoryservice, Candleshistoryservice>(x => new Candleshistoryservice(settings.PrivateApi.CandlesHistoryServiceUri));
 
             services.AddSingleton<IFeedHistoryRepository>(
                 new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,

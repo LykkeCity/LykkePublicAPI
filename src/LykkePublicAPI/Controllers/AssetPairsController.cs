@@ -3,12 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Feed;
 using Core.Services;
-using Lykke.Domain.Prices.Repositories;
+using Lykke.Domain.Prices;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Lykke.Domain.Prices.Contracts;
 using Lykke.Service.Assets.Client.Custom;
-using Prices = Lykke.Domain.Prices;
+using Lykke.Service.CandlesHistory.Client;
+using PriceType = Lykke.Service.CandlesHistory.Client.Models.PriceType;
 
 namespace LykkePublicAPI.Controllers
 {
@@ -16,18 +16,18 @@ namespace LykkePublicAPI.Controllers
     public class AssetPairsController : Controller
     {
         private readonly ICachedAssetsService _assetsService;
-        private readonly ICandleHistoryRepository _feedCandlesRepository;
+        private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
         private readonly IMarketProfileService _marketProfileService;
 
         public AssetPairsController(
             ICachedAssetsService assetsService,
-            ICandleHistoryRepository feedCandlesRepository, 
+            ICandleshistoryservice candlesHistoryService, 
             IFeedHistoryRepository feedHistoryRepository,
             IMarketProfileService marketProfileService)
         {
             _assetsService = assetsService;
-            _feedCandlesRepository = feedCandlesRepository;
+            _candlesHistoryService = candlesHistoryService;
             _feedHistoryRepository = feedHistoryRepository;
             _marketProfileService = marketProfileService;
         }
@@ -126,14 +126,14 @@ namespace LykkePublicAPI.Controllers
                     result.Add(new ApiAssetPairHistoryRateModel {Id = pairId});
                 }
 
-                //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
+                //candlesTasks.Add(_candlesHistoryService.ReadCandleAsync(pairId, request.Period.ToCandlesHistoryServiceModel(),
                 //    true, request.DateTime).ContinueWith(task => new CandleWithPairId
                 //{
                 //    AssetPairId = pairId,
                 //    Candle = task.Result
                 //}));
 
-                //candlesTasks.Add(_feedCandlesRepository.ReadCandleAsync(pairId, request.Period.ToDomainModel(),
+                //candlesTasks.Add(_candlesHistoryService.ReadCandleAsync(pairId, request.Period.ToCandlesHistoryServiceModel(),
                 //    false, request.DateTime).ContinueWith(task => new CandleWithPairId
                 //{
                 //    AssetPairId = pairId,
@@ -163,24 +163,18 @@ namespace LykkePublicAPI.Controllers
         /// 
         /// </remarks>
         /// <param name="assetPairId">Asset pair Id</param>
+        /// <param name="request">Request model</param>
         [HttpPost("rate/history/{assetPairId}")]
         public async Task<ApiAssetPairHistoryRateModel> GetHistoryRate([FromRoute]string assetPairId,
             [FromBody] AssetPairRateHistoryRequest request)
         {
-            IFeedCandle buyCandle = null;
-            IFeedCandle sellCandle = null;
-            try
-            {
-                buyCandle = await _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
-                    Prices.PriceType.Bid, request.DateTime);
+            var toDate = request.DateTime.AddIntervalTicks(1, request.Period.ToDomainModel());
 
-                sellCandle = await _feedCandlesRepository.GetCandleAsync(assetPairId, request.Period.ToDomainModel(),
-                    Prices.PriceType.Ask, request.DateTime);
-            }
-            catch (AppSettingException)
-            {
-                // TODO: Log absent connection string for the specified assetPairId
-            }
+            var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+
+            var buyCandle = buyHistory.History.SingleOrDefault();
+            var sellCandle = sellHistory.History.SingleOrDefault();
 
             return Convertions.ToApiModel(assetPairId, buyCandle, sellCandle);
         }

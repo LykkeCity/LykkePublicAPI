@@ -1,22 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using LykkePublicAPI.Models;
-using Lykke.Domain.Prices.Contracts;
-using Lykke.Domain.Prices.Repositories;
+using Lykke.Service.CandlesHistory.Client;
 using Microsoft.AspNetCore.Mvc;
-using Prices = Lykke.Domain.Prices;
 
 namespace LykkePublicAPI.Controllers
 {
     [Route("api/[controller]")]
     public class CandlesController : Controller
     {
-        private readonly ICandleHistoryRepository _feedCandlesRepository;
+        private readonly ICandleshistoryservice _candlesService;
 
-        public CandlesController(ICandleHistoryRepository feedCandlesRepository)
+        public CandlesController(ICandleshistoryservice candlesService)
         {
-            _feedCandlesRepository = feedCandlesRepository;
+            _candlesService = candlesService;
         }
 
         /// <summary>
@@ -33,6 +30,7 @@ namespace LykkePublicAPI.Controllers
         /// 
         /// </remarks>
         /// <param name="assetPairId">Asset pair Id</param>
+        /// <param name="request">Request model</param>
         [HttpPost("history/{assetPairId}")]
         [ProducesResponseType(typeof(CandlesHistoryResponse), 200)]
         [ProducesResponseType(typeof(ApiError), 400)]
@@ -43,30 +41,21 @@ namespace LykkePublicAPI.Controllers
                 return BadRequest(ModelState.ToApiError());
             }
 
-            IEnumerable<IFeedCandle> candles = new List<IFeedCandle>();
-
-            try
-            {
-                candles = await _feedCandlesRepository.GetCandlesAsync(
+            var history = await _candlesService.GetCandlesHistoryAsync(
                     assetPairId,
-                    request.Period.Value.ToDomainModel(),
-                    priceType: request.Type.HasValue ? request.Type.Value.ToDomainModel() : Prices.PriceType.Ask,
-                    from: request.DateFrom.Value,
-                    to: request.DateTo.Value);
-            }
-            catch (AppSettingException)
-            {
-                // TODO: Log absent connection string for the specified assetPairId
-            }
-
-            var response = new CandlesHistoryResponse()
+                    request.Type.Value.ToCandlesHistoryServiceModel(),
+                    request.Period.Value.ToCandlesHistoryServiceApiModel(),
+                    request.DateFrom.Value,
+                    request.DateTo.Value);
+            
+            var response = new CandlesHistoryResponse
             {
                 AssetPair = assetPairId,
                 Period = request.Period.Value,
                 DateFrom = request.DateFrom.Value,
                 DateTo = request.DateTo.Value,
                 Type = request.Type.Value,
-                Data = candles.ToApiModel().ToList()
+                Data = history.History.ToApiModel().ToList()
             };
 
             return Ok(response);

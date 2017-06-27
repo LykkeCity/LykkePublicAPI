@@ -10,6 +10,7 @@ using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.MarketProfileService.Client.Models;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.CandlesHistory.Client.Models;
 
 namespace LykkePublicAPI.Models
 {
@@ -171,7 +172,17 @@ namespace LykkePublicAPI.Models
             return assetPairs.Select(x => x.ToApiModel());
         }
 
-        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, IFeedCandle buyCandle, IFeedCandle sellCandle)
+        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, Candle buyCandle, Candle sellCandle)
+        {
+            return new ApiAssetPairHistoryRateModel
+            {
+                Id = assetPairId,
+                Ask = sellCandle?.Close,
+                Bid = buyCandle?.Close
+            };
+        }
+
+        private static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, IFeedCandle buyCandle, IFeedCandle sellCandle)
         {
             return new ApiAssetPairHistoryRateModel
             {
@@ -198,7 +209,7 @@ namespace LykkePublicAPI.Models
             return result;
         }
 
-        public static ApiCandle ToApiCandle(this IFeedCandle candle)
+        public static ApiCandle ToApiCandle(this Candle candle)
         {
             return (candle != null) ? new ApiCandle
             {
@@ -210,7 +221,7 @@ namespace LykkePublicAPI.Models
             } : null;
         }
 
-        public static IEnumerable<ApiCandle> ToApiModel(this IEnumerable<IFeedCandle> candles)
+        public static IEnumerable<ApiCandle> ToApiModel(this IEnumerable<Candle> candles)
         {
             if (candles != null)
             {
@@ -219,7 +230,6 @@ namespace LykkePublicAPI.Models
                     yield return candle.ToApiCandle();
                 }
             }
-            yield break;
         }
 
         public static ApiAsset ToApiModel(this IAsset asset)

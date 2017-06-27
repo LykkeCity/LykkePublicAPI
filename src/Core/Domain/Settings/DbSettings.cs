@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Core.Domain.Settings
 {
     public class Settings
     {
         public PublicApiSettings PublicApi { get; set; }
-        public IDictionary<string, string> CandleHistoryAssetConnections { get; set; } = new Dictionary<string, string>();
     }
 
     public class PublicApiSettings
@@ -23,6 +21,7 @@ namespace Core.Domain.Settings
         public AssetsServiceSettings AssetsService { get; set; }
         public Uri DutchAuctionServiceUri { get; set; }
         public Uri MarketProfileServiceUri { get; set; }
+        public Uri CandlesHistoryServiceUri { get; set; }
     }
 
     public class AssetsServiceSettings

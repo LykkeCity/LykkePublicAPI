@@ -26,6 +26,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
+using Lykke.SettingsReader;
 using Lykke.MarketProfileService.Client;
 using Microsoft.AspNetCore.Http;
 
@@ -56,7 +57,7 @@ namespace LykkePublicAPI
 #if DEBUG
             var generalSettings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]);
 #else
-            var generalSettings = GeneralSettingsReader.ReadGeneralSettings<Settings>(Configuration["ConnectionString"]);
+            var generalSettings = HttpSettingsLoader.Load<Settings>(Configuration["ConnectionString"]);
 #endif
             var settings = generalSettings.PublicApi;
 

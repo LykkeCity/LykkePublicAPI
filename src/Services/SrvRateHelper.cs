@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Common;
-using Core.Domain.Assets;
-using Core.Domain.Exchange;
 using Core.Services;
+using Lykke.Service.Assets.Client.Custom;
 
 namespace Services
 {
@@ -21,7 +20,7 @@ namespace Services
             return GetRate(neededAssetId, assetPair, rates.Ask);
         }
 
-        public double GetRate(string neededAssetId, IAssetPair assetPair, double price)
+        private double GetRate(string neededAssetId, IAssetPair assetPair, double price)
         {
             var inverted = assetPair.IsInverted(neededAssetId);
             int accuracy = inverted ? assetPair.Accuracy : assetPair.InvertedAccuracy;

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
-using Core.Domain.Assets;
 using Core.Domain.Settings;
 using Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.Domain.Prices.Model;
+using Lykke.Service.Assets.Client.Custom;
 
 namespace Services
 {

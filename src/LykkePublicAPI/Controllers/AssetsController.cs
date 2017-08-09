@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Core.Domain.Assets;
+using Lykke.Service.Assets.Client.Custom;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,11 +10,11 @@ namespace LykkePublicAPI.Controllers
     [Route("api/[controller]")]
     public class AssetsController
     {
-        private readonly CachedDataDictionary<string, IAsset> _assetsDict;
+        private readonly ICachedAssetsService _assetsService;
 
-        public AssetsController(CachedDataDictionary<string, IAsset> assetsDict)
+        public AssetsController(ICachedAssetsService assetsService)
         {
-            _assetsDict = assetsDict;
+            _assetsService = assetsService;
         }
 
         /// <summary>
@@ -24,7 +23,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("dictionary")]
         public async Task<IEnumerable<ApiAsset>> GetDictionary()
         {
-            var assets = (await _assetsDict.Values()).Where(x => !x.IsDisabled);
+            var assets = (await _assetsService.GetAllAssetsAsync()).Where(x => !x.IsDisabled);
 
             return assets.ToApiModel();
         }

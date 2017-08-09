@@ -4,9 +4,12 @@
       "HTradesConnString": "UseDevelopmentStorage=true",
       "BalancesInfoConnString": "UseDevelopmentStorage=true",
       "HLiquidityConnString": "UseDevelopmentStorage=true",
-      "DictsConnString": "UseDevelopmentStorage=true",
       "LogsConnString": "UseDevelopmentStorage=true"
     },
+    "AssetsCache": {
+        "ExpirationPeriod": "05:00:00"
+    },
+
     "CacheSettings": {
       "FinanceDataCacheInstance": "FinanceDataCacheInstance",
       "RedisConfiguration": "",
@@ -27,5 +30,8 @@
   },
   "CandlesHistoryServiceClient": {
     "ServiceUrl": "http://candles-history.lykke-service.svc.cluster.local"
+  },
+  "Assets": {
+    "ServiceUrl": "http://assets.lykke-service"
   }
 }

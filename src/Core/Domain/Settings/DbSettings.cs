@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace Core.Domain.Settings
 {
     public class Settings
@@ -6,6 +8,7 @@ namespace Core.Domain.Settings
         public PublicApiSettings PublicApi { get; set; }
         public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
+        public AssetsSettings Assets { get; set; }
     }
 
     public class SlackNotificationsSettings
@@ -26,7 +29,18 @@ namespace Core.Domain.Settings
         public CacheSettings CacheSettings { get; set; }
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
+        public AssetsCacheSettings AssetsCache { get; set; }
     }
+
+    public class AssetsSettings
+    {
+        public string ServiceUrl { get; set; }
+    }
+
+    public class AssetsCacheSettings
+    {
+        public TimeSpan ExpirationPeriod { get; set; }
+    } 
 
     public class CandlesHistoryServiceClientSettings
     {
@@ -44,9 +58,7 @@ namespace Core.Domain.Settings
         public string HTradesConnString { get; set; }
         public string BalancesInfoConnString { get; set; }
         public string HLiquidityConnString { get; set; }
-        public string DictsConnString { get; set; }
         public string LogsConnString { get; set; }
-
     }
 
     public class CacheSettings

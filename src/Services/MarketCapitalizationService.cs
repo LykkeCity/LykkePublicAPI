@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Common;
 using Core;
 using Core.Domain.Accounts;
-using Core.Domain.Assets;
 using Core.Services;
+using Lykke.Service.Assets.Client.Custom;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Services

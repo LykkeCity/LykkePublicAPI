@@ -37,6 +37,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
     <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="1.0.12" />
+    <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.14" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.11" />
     <PackageReference Include="Lykke.Logs" Version="1.0.29" />
     <PackageReference Include="Lykke.SettingsReader" Version="1.0.38" />

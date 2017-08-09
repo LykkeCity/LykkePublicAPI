@@ -1,16 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using AzureRepositories;
 using AzureRepositories.Accounts;
-using AzureRepositories.Assets;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
-using Common;
 using Common.Log;
 using Core.Domain.Accounts;
-using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Domain.Settings;
@@ -26,6 +22,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Service.CandlesHistory.Client;
+using Lykke.Service.Assets.Client.Custom;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
@@ -70,16 +67,12 @@ namespace LykkePublicAPI
             services.AddSingleton(settings.PublicApi);
             services.AddSingleton(settings.PublicApi.CompanyInfo);
 
+            services.UseAssetsClient(AssetServiceSettings.Create(
+                new Uri(generalSettings.Assets.ServiceUrl), 
+                settings.AssetsCache.ExpirationPeriod));
+
             var log = CreateLogWithSlack(services, settings);
             services.AddSingleton(log);
-
-            services.AddSingleton<IAssetsRepository>(
-                new AssetsRepository(new AzureTableStorage<AssetEntity>(settings.PublicApi.Db.DictsConnString, "Dictionaries",
-                    null)));
-
-            services.AddSingleton<IAssetPairsRepository>(
-                new AssetPairsRepository(new AzureTableStorage<AssetPairEntity>(settings.PublicApi.Db.DictsConnString, "Dictionaries",
-                    null)));
 
             services.AddSingleton<IAssetPairBestPriceRepository>(
                 new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.PublicApi.Db.HLiquidityConnString,
@@ -102,27 +95,6 @@ namespace LykkePublicAPI
             services.AddSingleton<IWalletsRepository>(
                 new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.PublicApi.Db.BalancesInfoConnString,
                     "Accounts", null)));
-
-            services.AddSingleton(x =>
-            {
-                var assetPairsRepository = (IAssetPairsRepository)x.GetService(typeof(IAssetPairsRepository));
-                return new CachedDataDictionary<string, IAssetPair>(
-                    async () => (await assetPairsRepository.GetAllAsync()).ToDictionary(itm => itm.Id));
-            });
-
-            services.AddSingleton(x =>
-            {
-                var assetRepository = (IAssetsRepository) x.GetService(typeof(IAssetsRepository));
-                return new CachedDataDictionary<string, IAsset>(
-                    async () => (await assetRepository.GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            });
-
-            services.AddSingleton(x =>
-            {
-                var assetsRepo = (IAssetsRepository)x.GetService(typeof(IAssetsRepository));
-                return new CachedDataDictionary<string, IAsset>(
-                    async () => (await assetsRepo.GetAssetsAsync()).ToDictionary(itm => itm.Id));
-            });
 
             services.AddDistributedRedisCache(options =>
             {

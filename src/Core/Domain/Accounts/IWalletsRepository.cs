@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Core.Domain.Assets;
+using Lykke.Service.Assets.Client.Custom;
 
 namespace Core.Domain.Accounts
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Lykke.Domain.Prices;
+using Lykke.Service.CandlesHistory.Client.Models;
 
 namespace LykkePublicAPI.Models
 {
@@ -53,7 +53,8 @@ namespace LykkePublicAPI.Models
 
     public static class RequestsConvertorsExt
     {
-        public static TimeInterval ToDomainModel(this Period candleType)
+
+        public static TimeInterval ToCandlesHistoryServiceApiModel(this Period candleType)
         {
             switch (candleType)
             {
@@ -72,9 +73,38 @@ namespace LykkePublicAPI.Models
             }
         }
 
-        public static Lykke.Domain.Prices.PriceType ToDomainModel(this PriceType type)
+        public static Lykke.Domain.Prices.TimeInterval ToDomainModel(this Period candleType)
         {
-            return (Lykke.Domain.Prices.PriceType)type;
+            switch (candleType)
+            {
+                case Period.Sec:
+                    return Lykke.Domain.Prices.TimeInterval.Sec;
+                case Period.Minute:
+                    return Lykke.Domain.Prices.TimeInterval.Minute;
+                case Period.Hour:
+                    return Lykke.Domain.Prices.TimeInterval.Hour;
+                case Period.Day:
+                    return Lykke.Domain.Prices.TimeInterval.Day;
+                case Period.Month:
+                    return Lykke.Domain.Prices.TimeInterval.Month;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(candleType), candleType, null);
+            }
+        }
+
+        public static Lykke.Service.CandlesHistory.Client.Models.PriceType ToCandlesHistoryServiceModel(this PriceType type)
+        {
+            switch (type)
+            {
+                case PriceType.Bid:
+                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Bid;
+                case PriceType.Ask:
+                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Ask;
+                case PriceType.Mid:
+                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Mid;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
         }
     }
 }

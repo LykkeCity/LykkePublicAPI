@@ -27,6 +27,7 @@ using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
 using Lykke.SettingsReader;
+using Lykke.MarketProfileService.Client;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -128,17 +129,21 @@ namespace LykkePublicAPI
                     async () => (await assetsRepo.GetAssetsAsync()).ToDictionary(itm => itm.Id));
             });
 
+            services.AddSingleton<IDutchAuctionService>(x => new DutchAuctionService(settings.PrivateApi.DutchAuctionServiceUri));
+
             services.AddDistributedRedisCache(options =>
             {
                 options.Configuration = settings.CacheSettings.RedisConfiguration;
                 options.InstanceName = settings.CacheSettings.FinanceDataCacheInstance;
             });
 
+            services.AddSingleton<ILykkeMarketProfileServiceAPI>(x => new LykkeMarketProfileServiceAPI(settings.PrivateApi.MarketProfileServiceUri));
+
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
             services.AddTransient<IMarketProfileService, MarketProfileService>();
             services.AddTransient<ISrvRatesHelper, SrvRateHelper>();
-
+            
             services.AddMvc();
 
             services.AddSwaggerGen();

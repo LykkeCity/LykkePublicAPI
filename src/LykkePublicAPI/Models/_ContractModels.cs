@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Core.Domain.Assets;
@@ -10,9 +9,26 @@ using Core.Domain.Feed;
 using Core.Feed;
 using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
+using Lykke.MarketProfileService.Client.Models;
 
 namespace LykkePublicAPI.Models
 {
+    public class ApiDutchAuctionOrderbook
+    {
+        public double Price { get; set; }
+        public double InMoneyVolume { get; set; }
+        public double OutOfTheMoneyVolume { get; set; }
+        public IEnumerable<Order> InMoneyOrders { get; set; }
+        public IEnumerable<Order> OutOfTheMoneyOrders { get; set; }
+
+        public class Order
+        {
+            public double Price { get; set; }
+            public double Volume { get; set; }
+            public int Investors { get; set; }
+        }
+    }
+
     public class ApiAssetPair
     {
         public string Id { get; set; }
@@ -109,18 +125,13 @@ namespace LykkePublicAPI.Models
 
     public static class Convertions
     {
-        public static IEnumerable<ApiAssetPairRateModel> ToApiModel(this MarketProfile marketProfile)
-        {
-            return marketProfile.Profile.Select(x => x.ToApiModel());
-        }
-
-        public static ApiAssetPairRateModel ToApiModel(this IFeedData feedData)
+        public static ApiAssetPairRateModel ToApiModel(this AssetPairModel feedData)
         {
             return new ApiAssetPairRateModel
             {
-                Ask = feedData.Ask,
-                Bid = feedData.Bid,
-                Id = feedData.Asset
+                Ask = feedData.AskPrice,
+                Bid = feedData.BidPrice,
+                Id = feedData.AssetPair
             };
         }
 

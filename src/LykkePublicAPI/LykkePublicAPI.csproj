@@ -39,6 +39,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.14" />
     <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="1.0.12" />
+    <PackageReference Include="Lykke.SettingsReader" Version="1.0.38" />
     <PackageReference Include="Swashbuckle" Version="6.0.0-beta902" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />

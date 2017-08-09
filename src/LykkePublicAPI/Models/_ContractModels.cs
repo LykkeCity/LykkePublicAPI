@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Core.Domain.Exchange;
@@ -9,6 +8,7 @@ using Core.Domain.Feed;
 using Core.Feed;
 using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
+using Lykke.MarketProfileService.Client.Models;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client.Models;
 
@@ -121,18 +121,13 @@ namespace LykkePublicAPI.Models
 
     public static class Convertions
     {
-        public static IEnumerable<ApiAssetPairRateModel> ToApiModel(this MarketProfile marketProfile)
-        {
-            return marketProfile.Profile.Select(x => x.ToApiModel());
-        }
-
-        public static ApiAssetPairRateModel ToApiModel(this IFeedData feedData)
+        public static ApiAssetPairRateModel ToApiModel(this AssetPairModel feedData)
         {
             return new ApiAssetPairRateModel
             {
-                Ask = feedData.Ask,
-                Bid = feedData.Bid,
-                Id = feedData.Asset
+                Ask = feedData.AskPrice,
+                Bid = feedData.BidPrice,
+                Id = feedData.AssetPair
             };
         }
 

@@ -32,6 +32,6 @@
     "ServiceUrl": "http://candles-history.lykke-service.svc.cluster.local"
   },
   "Assets": {
-    "ServiceUrl": "http://assets.lykke-service"
+    "ServiceUrl": "http://assets.lykke-service.svc.cluster.local"
   }
 }

@@ -96,6 +96,16 @@ namespace LykkePublicAPI.Models
         public List<ApiCandle> Data { get; set; } = new List<ApiCandle>();
     }
 
+    public class ApiCommonTrade
+    {
+        public string Id { get; set; }
+        public DateTime Dt { get; set; }
+        public string BaseAsset { get; set; }
+        public string QuotAsset { get; set; }
+        public double Price { get; set; }
+        public double Amount { get; set; }
+    }
+
     public enum ErrorCodes
     {
         InvalidInput = 1
@@ -122,6 +132,24 @@ namespace LykkePublicAPI.Models
                 Bid = feedData.Bid,
                 Id = feedData.Asset
             };
+        }
+
+        public static ApiCommonTrade ToApiModel(this ITradeCommon trade)
+        {
+            return new ApiCommonTrade
+            {
+                Amount = trade.Amount,
+                BaseAsset = trade.BaseAsset,
+                Dt = trade.Dt,
+                Id = trade.Id,
+                Price = trade.Price,
+                QuotAsset = trade.QuotAsset
+            };
+        }
+
+        public static IEnumerable<ApiCommonTrade> ToApiModel(this IEnumerable<ITradeCommon> trades)
+        {
+            return trades.Select(x => x.ToApiModel());
         }
 
         public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)

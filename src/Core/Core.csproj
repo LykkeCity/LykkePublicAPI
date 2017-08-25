@@ -4,16 +4,14 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Core</AssemblyName>
     <PackageId>Core</PackageId>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45</PackageTargetFallback>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="1.1.69" />
-    <PackageReference Include="Lykke.Domain.Prices" Version="0.9.0" />
+    <PackageReference Include="Lykke.Common" Version="1.1.93" />
+    <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
   </ItemGroup>
 
 </Project>

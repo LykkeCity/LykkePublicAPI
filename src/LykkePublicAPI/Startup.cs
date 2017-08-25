@@ -87,6 +87,10 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
                     "MarketsData", null)));
 
+            services.AddSingleton<ITradesCommonRepository>(
+                new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.Db.HTradesConnString,
+                    "TradesCommon", null)));
+
             services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
             {
                 string connString;

@@ -100,8 +100,8 @@ namespace LykkePublicAPI.Models
     {
         public string Id { get; set; }
         public DateTime Dt { get; set; }
-        public string BaseAsset { get; set; }
-        public string QuotAsset { get; set; }
+        public string BaseAssetId { get; set; }
+        public string QuotingAssetId { get; set; }
         public double Price { get; set; }
         public double Amount { get; set; }
     }
@@ -139,11 +139,11 @@ namespace LykkePublicAPI.Models
             return new ApiCommonTrade
             {
                 Amount = trade.Amount,
-                BaseAsset = trade.BaseAsset,
+                BaseAssetId = trade.BaseAsset,
                 Dt = trade.Dt,
                 Id = trade.Id,
                 Price = trade.Price,
-                QuotAsset = trade.QuotAsset
+                QuotingAssetId = trade.QuotAsset
             };
         }
 

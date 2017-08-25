@@ -3,5 +3,5 @@ ENTRYPOINT ["dotnet", "LykkePublicAPI.dll"]
 ARG source=.
 WORKDIR /app
 COPY $source .
-COPY /runtimes/debian-x64/native/libuv.so /app
+COPY /runtimes/linux-x64/native/libuv.so /app
 #RUN ln -s /runtimes/debian-x64/native/libuv.so /app/libuv.so

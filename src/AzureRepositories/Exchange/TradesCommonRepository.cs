@@ -70,8 +70,11 @@ namespace AzureRepositories.Exchange
             for (int i = 0; i < DaysLimit; ++i)
             {
                 trades.AddRange(await _tableStorage.GetTopRecordsAsync(TradeCommonEntity.GenerateParitionKey(currentDt), n));
+
                 if (trades.Count == n)
                     return trades;
+
+                currentDt = currentDt.Subtract(TimeSpan.FromDays(1));
             }
 
             return trades;

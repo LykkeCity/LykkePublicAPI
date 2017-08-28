@@ -26,6 +26,7 @@ namespace Core.Domain.Assets
         bool BlockchainDepositEnabled { get; }
         double DustLimit { get; }
         string CategoryId { get; }
+        string DisplayId { get; set; }
     }
 
     public class Asset : IAsset

@@ -36,7 +36,10 @@
   </Target>
 
   <ItemGroup>
+    <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.11" />
+    <PackageReference Include="Lykke.Logs" Version="1.0.29" />
     <PackageReference Include="Lykke.SettingsReader" Version="1.0.38" />
+    <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="1.0.4" />
     <PackageReference Include="Swashbuckle" Version="6.0.0-beta902" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />

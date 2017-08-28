@@ -5,7 +5,20 @@ namespace Core.Domain.Settings
     public class Settings
     {
         public PublicApiSettings PublicApi { get; set; }
+        public SlackNotificationsSettings SlackNotifications { get; set; }
         public IDictionary<string, string> CandleHistoryAssetConnections { get; set; } = new Dictionary<string, string>();
+    }
+
+    public class SlackNotificationsSettings
+    {
+        public AzureQueueSettings AzureQueue { get; set; }
+    }
+
+    public class AzureQueueSettings
+    {
+        public string ConnectionString { get; set; }
+
+        public string QueueName { get; set; }
     }
 
     public class PublicApiSettings

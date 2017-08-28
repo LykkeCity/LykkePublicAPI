@@ -10,6 +10,7 @@ using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
 using AzureStorage.Tables;
 using Common;
+using Common.Log;
 using Core.Domain.Accounts;
 using Core.Domain.Assets;
 using Core.Domain.Exchange;
@@ -17,6 +18,8 @@ using Core.Domain.Feed;
 using Core.Domain.Settings;
 using Core.Feed;
 using Core.Services;
+using Lykke.AzureQueueIntegration;
+using Lykke.Common.ApiLibrary.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +29,8 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
-using Lykke.SettingsReader;
+using Lykke.Logs;
+using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -58,7 +62,7 @@ namespace LykkePublicAPI
 #else
             var generalSettings = HttpSettingsLoader.Load<Settings>(Configuration["ConnectionString"]);
 #endif
-            var settings = generalSettings.PublicApi;
+            var settings = generalSettings;
 
             // Ignore case of asset in asset connections
             generalSettings.CandleHistoryAssetConnections = 
@@ -69,26 +73,30 @@ namespace LykkePublicAPI
             services.AddMemoryCache();
 
             services.AddSingleton(settings);
-            services.AddSingleton(settings.CompanyInfo);
+            services.AddSingleton(settings.PublicApi);
+            services.AddSingleton(settings.PublicApi.CompanyInfo);
+
+            var log = CreateLogWithSlack(services, settings);
+            services.AddSingleton(log);
 
             services.AddSingleton<IAssetsRepository>(
-                new AssetsRepository(new AzureTableStorage<AssetEntity>(settings.Db.DictsConnString, "Dictionaries",
+                new AssetsRepository(new AzureTableStorage<AssetEntity>(settings.PublicApi.Db.DictsConnString, "Dictionaries",
                     null)));
 
             services.AddSingleton<IAssetPairsRepository>(
-                new AssetPairsRepository(new AzureTableStorage<AssetPairEntity>(settings.Db.DictsConnString, "Dictionaries",
+                new AssetPairsRepository(new AzureTableStorage<AssetPairEntity>(settings.PublicApi.Db.DictsConnString, "Dictionaries",
                     null)));
 
             services.AddSingleton<IAssetPairBestPriceRepository>(
-                new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.Db.HLiquidityConnString,
+                new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.PublicApi.Db.HLiquidityConnString,
                     "MarketProfile", null)));
 
             services.AddSingleton<IMarketDataRepository>(
-                new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.Db.HTradesConnString,
+                new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.PublicApi.Db.HTradesConnString,
                     "MarketsData", null)));
 
             services.AddSingleton<ITradesCommonRepository>(
-                new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.Db.HTradesConnString,
+                new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.PublicApi.Db.HTradesConnString,
                     "TradesCommon", null)));
 
             services.AddSingleton<ICandleHistoryRepository>(serviceProvider => new CandleHistoryRepositoryResolver((asset, tableName) =>
@@ -104,11 +112,11 @@ namespace LykkePublicAPI
             }));
 
             services.AddSingleton<IFeedHistoryRepository>(
-                new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.Db.HLiquidityConnString,
+                new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.PublicApi.Db.HLiquidityConnString,
                     "FeedHistory", null)));
 
             services.AddSingleton<IWalletsRepository>(
-                new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.Db.BalancesInfoConnString,
+                new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.PublicApi.Db.BalancesInfoConnString,
                     "Accounts", null)));
 
             services.AddSingleton(x =>
@@ -134,8 +142,8 @@ namespace LykkePublicAPI
 
             services.AddDistributedRedisCache(options =>
             {
-                options.Configuration = settings.CacheSettings.RedisConfiguration;
-                options.InstanceName = settings.CacheSettings.FinanceDataCacheInstance;
+                options.Configuration = settings.PublicApi.CacheSettings.RedisConfiguration;
+                options.InstanceName = settings.PublicApi.CacheSettings.FinanceDataCacheInstance;
             });
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
@@ -183,15 +191,59 @@ namespace LykkePublicAPI
 
             app.UseStaticFiles();
 
-            app.UseMvc();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseLykkeMiddleware("PublicAPI", ex => new { Message = "Technical problem" });
+
+            app.UseMvc();
+
             app.UseSwagger();
             app.UseSwaggerUi();
+        }
+
+        private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings)
+        {
+            var consoleLogger = new LogToConsole();
+            var aggregateLogger = new AggregateLogger();
+
+            aggregateLogger.AddLog(consoleLogger);
+
+            // Creating slack notification service, which logs own azure queue processing messages to aggregate log
+            var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new Lykke.AzureQueueIntegration.AzureQueueSettings
+            {
+                ConnectionString = settings.SlackNotifications.AzureQueue.ConnectionString,
+                QueueName = settings.SlackNotifications.AzureQueue.QueueName
+            }, aggregateLogger);
+
+            var dbLogConnectionString = settings.PublicApi.Db.LogsConnString;
+
+            // Creating azure storage logger, which logs own messages to concole log
+            if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
+            {
+                const string appName = "PublicAPI";
+
+                var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
+                    appName,
+                    AzureTableStorage<LogEntity>.Create(() => dbLogConnectionString, "PublicAPILog", consoleLogger),
+                    consoleLogger);
+
+                var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(appName, slackService, consoleLogger);
+
+                var azureStorageLogger = new LykkeLogToAzureStorage(
+                    appName,
+                    persistenceManager,
+                    slackNotificationsManager,
+                    consoleLogger);
+
+                azureStorageLogger.Start();
+
+                aggregateLogger.AddLog(azureStorageLogger);
+            }
+
+            return aggregateLogger;
         }
     }
 }

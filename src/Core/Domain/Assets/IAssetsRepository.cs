@@ -52,7 +52,7 @@ namespace Core.Domain.Assets
         public bool BlockchainDepositEnabled { get; set; }
         public double DustLimit { get; set; }
         public string CategoryId { get; set; }
-
+        public string DisplayId { get; set; }
 
         public static Asset Create(string id, string blockChainId, string categoryId, string name, string symbol, string idIssuer, bool hideIfZero,
             bool bankCardsDeposit, bool swiftEnabled, bool blockChainDepositEnabled, bool isDisabled = false, bool hideWithdraw = false, bool hideDeposit = false,

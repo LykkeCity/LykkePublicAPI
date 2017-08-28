@@ -39,6 +39,7 @@ namespace AzureRepositories.Assets
         public bool BlockchainDepositEnabled { get; set; }
         public double DustLimit { get; set; }
         public string CategoryId { get; set; }
+        public string DisplayId { get; set; }
 
         public static AssetEntity Create(IAsset asset)
         {

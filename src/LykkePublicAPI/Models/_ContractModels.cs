@@ -30,6 +30,7 @@ namespace LykkePublicAPI.Models
         public string Id { get; set; }
 
         public string Name { get; set; }
+        public string DisplayId { get; set; }
 
         public string BitcoinAssetId { get; set; }
         public string BitcoinAssetAddress { get; set; }
@@ -248,7 +249,8 @@ namespace LykkePublicAPI.Models
                 BitcoinAssetId = asset.BlockChainAssetId,
                 Id = asset.Id,
                 Name = asset.Name,
-                Symbol = asset.Symbol
+                Symbol = asset.Symbol,
+                DisplayId = asset.DisplayId
             };
         }
 

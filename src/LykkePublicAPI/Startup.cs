@@ -18,7 +18,6 @@ using Core.Domain.Feed;
 using Core.Domain.Settings;
 using Core.Feed;
 using Core.Services;
-using Lykke.AzureQueueIntegration;
 using Lykke.Common.ApiLibrary.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,7 +29,6 @@ using Services;
 using Swashbuckle.Swagger.Model;
 using Lykke.Domain.Prices.Repositories;
 using Lykke.Logs;
-using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.AspNetCore.Http;
 
@@ -177,7 +175,7 @@ namespace LykkePublicAPI
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
             app.Use(async (context, next) =>
             {
@@ -203,6 +201,16 @@ namespace LykkePublicAPI
 
             app.UseSwagger();
             app.UseSwaggerUi();
+            appLifetime.ApplicationStopped.Register(() => CleanUp(app.ApplicationServices));
+        }
+
+        private void CleanUp(IServiceProvider services)
+        {
+            Console.WriteLine("Cleaning up...");
+
+            (services.GetService<ILog>() as IDisposable)?.Dispose();
+
+            Console.WriteLine("Cleaned up");
         }
 
         private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings)

@@ -185,8 +185,10 @@ namespace LykkePublicAPI
                     context.Response.StatusCode = 200;
                     await context.Response.WriteAsync("");
                 }
-
-                await next.Invoke();
+                else
+                {
+                    await next.Invoke();
+                }
             });
 
             app.UseStaticFiles();

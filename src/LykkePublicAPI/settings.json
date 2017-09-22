@@ -18,6 +18,13 @@
       "LkkCompanyTreasuryAmount": 52506403
     }
   },
+  "SlackNotifications": {
+    "AzureQueue": {
+      "ConnectionString": "",
+      "QueueName": ""
+    },
+    "ThrottlingLimitSeconds": 0
+  },
   "CandlesHistoryServiceClient": {
     "ServiceUrl": "http://candles-history.lykke-service.svc.cluster.local"
   }

@@ -18,9 +18,6 @@
       "LkkCompanyTreasuryAmount": 52506403
     }
   },
-  "CandleHistoryAssetConnections": {
-    "eurusd": "UseDevelopmentStorage=true"
-  },
   "CandlesHistoryServiceClient": {
     "ServiceUrl": "http://candles-history.lykke-service.svc.cluster.local"
   }

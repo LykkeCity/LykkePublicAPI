@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Core.Domain.Assets;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Services;
+using Lykke.Service.Assets.Client.Custom;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,17 +16,17 @@ namespace LykkePublicAPI.Controllers
     {
         private readonly IMarketDataRepository _marketDataRepository;
         private readonly IAssetPairBestPriceRepository _marketProfileRepo;
-        private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDictionary;
+        private readonly ICachedAssetsService _assetsService;
         private readonly IMarketCapitalizationService _marketCapitalizationService;
 
         public MarketController(IMarketDataRepository marketDataRepository,
             IAssetPairBestPriceRepository marketProfileRepo,
-            CachedDataDictionary<string, IAssetPair> assetPairsDictionary,
+            ICachedAssetsService assetsService,
             IMarketCapitalizationService marketCapitalizationService)
         {
             _marketDataRepository = marketDataRepository;
             _marketProfileRepo = marketProfileRepo;
-            _assetPairsDictionary = assetPairsDictionary;
+            _assetsService = assetsService;
             _marketCapitalizationService = marketCapitalizationService;
         }
 
@@ -43,7 +42,7 @@ namespace LykkePublicAPI.Controllers
                 (await _marketDataRepository.Get24HMarketsAsync()).ToApiModel(marketProfile)
                     .ToList();
 
-            var assetPairs = (await _assetPairsDictionary.Values()).Where(x => !x.IsDisabled);
+            var assetPairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
 
             var emptyRecords =
                 assetPairs.Where(

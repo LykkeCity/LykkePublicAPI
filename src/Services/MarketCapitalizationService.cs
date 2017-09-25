@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Common;
 using Core;
 using Core.Domain.Accounts;
-using Core.Domain.Assets;
 using Core.Services;
+using Lykke.Service.Assets.Client.Custom;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Services
@@ -24,22 +24,17 @@ namespace Services
 
         private readonly IWalletsRepository _walletsRepository;
         private readonly IMemoryCache _memCache;
-        private readonly IMarketProfileService _marketProfileService;
-        private readonly CachedDataDictionary<string, IAssetPair> _assetPairsDict;
-        private readonly CachedDataDictionary<string, IAsset> _assetsDict;
+        private readonly ICachedAssetsService _assetsService;
         private readonly ISrvRatesHelper _srvRatesHelper;
 
         public MarketCapitalizationService(IWalletsRepository walletsRepository,
-            IMemoryCache memCache, IMarketProfileService marketProfileService,
-            CachedDataDictionary<string, IAssetPair> assetPairsDict,
-            CachedDataDictionary<string, IAsset> assetsDict,
+            IMemoryCache memCache, 
+            ICachedAssetsService assetsService,
             ISrvRatesHelper srvRatesHelper)
         {
             _walletsRepository = walletsRepository;
             _memCache = memCache;
-            _marketProfileService = marketProfileService;
-            _assetPairsDict = assetPairsDict;
-            _assetsDict = assetsDict;
+            _assetsService = assetsService;
             _srvRatesHelper = srvRatesHelper;
         }
 
@@ -48,7 +43,7 @@ namespace Services
             double rate = 1;
             if (market != LykkeConstants.LykkeAssetId)
             {
-                var assetPairs = await _assetPairsDict.Values();
+                var assetPairs = await _assetsService.GetAllAssetPairsAsync();
                 var pair = assetPairs.PairWithAssets(LykkeConstants.LykkeAssetId, market);
 
                 if (pair == null)
@@ -57,12 +52,10 @@ namespace Services
                 rate = await _srvRatesHelper.GetRate(market, pair);
             }
 
-            CacheRecord record;
-            var asset = await _assetsDict.GetItemAsync(market);
-
+            var asset = await _assetsService.TryGetAssetAsync(market);
             var cacheKey = GetMarketCapitalizationCacheKey();
 
-            if (!_memCache.TryGetValue(cacheKey, out record))
+            if (!_memCache.TryGetValue(cacheKey, out CacheRecord record))
             {
                 double amount = 0;
 

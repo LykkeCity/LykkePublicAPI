@@ -69,7 +69,7 @@ namespace LykkePublicAPI
 
             services.UseAssetsClient(AssetServiceSettings.Create(
                 new Uri(generalSettings.Assets.ServiceUrl), 
-                settings.AssetsCache.ExpirationPeriod));
+                settings.PublicApi.AssetsCache.ExpirationPeriod));
 
             var log = CreateLogWithSlack(services, settings);
             services.AddSingleton(log);

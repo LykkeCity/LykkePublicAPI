@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-
+﻿
 namespace Core.Domain.Settings
 {
     public class Settings
     {
         public PublicApiSettings PublicApi { get; set; }
+        public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
-        public IDictionary<string, string> CandleHistoryAssetConnections { get; set; } = new Dictionary<string, string>();
     }
 
     public class SlackNotificationsSettings
@@ -27,6 +26,11 @@ namespace Core.Domain.Settings
         public CacheSettings CacheSettings { get; set; }
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
+    }
+
+    public class CandlesHistoryServiceClientSettings
+    {
+        public string ServiceUrl { get; set; }
     }
 
     public class LykkeCompanyData

@@ -164,7 +164,12 @@ namespace LykkePublicAPI.Controllers
         public async Task<ApiAssetPairHistoryRateModel> GetHistoryRate([FromRoute]string assetPairId,
             [FromBody] AssetPairRateHistoryRequest request)
         {
-            var toDate = request.DateTime.AddIntervalTicks(1, request.Period.ToDomainModel());
+            var timeInterval = request.Period.ToDomainModel();
+            // HACK: Day and month ticks are starts from 1, AddIntervalTicks takes this into account,
+            // so compensate it here
+            var toDate = timeInterval == TimeInterval.Day || timeInterval == TimeInterval.Month
+                ? request.DateTime.AddIntervalTicks(2, request.Period.ToDomainModel())
+                : request.DateTime.AddIntervalTicks(1, request.Period.ToDomainModel());
 
             var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
             var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);

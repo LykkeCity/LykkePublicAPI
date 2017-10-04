@@ -16,8 +16,9 @@ namespace Services
 
         public async Task<double> GetRate(string neededAssetId, IAssetPair assetPair)
         {
-            var rates = await _marketProfileService.GetFeedDataAsync(assetPair.Id);
-            return GetRate(neededAssetId, assetPair, rates.Ask);
+            var rates = await _marketProfileService.TryGetPairAsync(assetPair.Id);
+
+            return GetRate(neededAssetId, assetPair, rates.AskPrice);
         }
 
         private double GetRate(string neededAssetId, IAssetPair assetPair, double price)

@@ -26,6 +26,7 @@ using Lykke.Service.Assets.Client.Custom;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
+using Lykke.MarketProfileService.Client;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -101,6 +102,9 @@ namespace LykkePublicAPI
                 options.Configuration = settings.PublicApi.CacheSettings.RedisConfiguration;
                 options.InstanceName = settings.PublicApi.CacheSettings.FinanceDataCacheInstance;
             });
+
+            services.AddSingleton<ILykkeMarketProfileServiceAPI>(x => new LykkeMarketProfileServiceAPI(
+                new Uri(generalSettings.MarketProfileServiceClient.ServiceUrl)));
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();

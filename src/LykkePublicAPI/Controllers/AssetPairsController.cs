@@ -45,9 +45,11 @@ namespace LykkePublicAPI.Controllers
                 .Select(x => x.Id)
                 .ToArray();
 
-            var marketProfile = await _marketProfileService.GetMarketProfileAsync();
-            marketProfile.Profile = marketProfile.Profile.Where(x => assetPairsIds.Contains(x.Asset));
-            return marketProfile.ToApiModel();
+            var marketProfile = (await _marketProfileService.GetAllPairsAsync())
+                .Where(x => assetPairsIds.Contains(x.AssetPair))
+                .Select(pair => pair.ToApiModel());
+
+            return marketProfile;
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("rate/{assetPairId}")]
         public async Task<ApiAssetPairRateModel> GetRate(string assetPairId)
         {
-            return (await _marketProfileService.GetFeedDataAsync(assetPairId))?.ToApiModel();
+            return (await _marketProfileService.TryGetPairAsync(assetPairId))?.ToApiModel();
         }
 
         /// <summary>

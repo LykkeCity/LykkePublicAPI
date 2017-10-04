@@ -9,6 +9,7 @@ namespace Core.Domain.Settings
         public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
+        public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
     }
 
     public class SlackNotificationsSettings
@@ -30,6 +31,11 @@ namespace Core.Domain.Settings
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
         public AssetsCacheSettings AssetsCache { get; set; }
+    }
+
+    public class MarketProfileServiceClientSettings
+    {
+        public string ServiceUrl { get; set; }
     }
 
     public class AssetsSettings

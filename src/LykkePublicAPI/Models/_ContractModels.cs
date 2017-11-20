@@ -11,6 +11,7 @@ using Lykke.Domain.Prices.Contracts;
 using Lykke.MarketProfileService.Client.Models;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client.Models;
+using LykkePublicAPI.Extensions;
 
 namespace LykkePublicAPI.Models
 {
@@ -104,6 +105,7 @@ namespace LykkePublicAPI.Models
         public DateTime Dt { get; set; }
         public string BaseAssetId { get; set; }
         public string QuotingAssetId { get; set; }
+        public string AssetPair { get; set; }
         public double Price { get; set; }
         public double Amount { get; set; }
     }
@@ -131,7 +133,7 @@ namespace LykkePublicAPI.Models
             };
         }
 
-        public static ApiCommonTrade ToApiModel(this ITradeCommon trade)
+        public static ApiCommonTrade ToApiModel(this ITradeCommon trade, string assetPair)
         {
             return new ApiCommonTrade
             {
@@ -140,13 +142,14 @@ namespace LykkePublicAPI.Models
                 Dt = trade.Dt,
                 Id = trade.Id,
                 Price = trade.Price,
-                QuotingAssetId = trade.QuotAsset
+                QuotingAssetId = trade.QuotAsset,
+                AssetPair = assetPair
             };
         }
 
-        public static IEnumerable<ApiCommonTrade> ToApiModel(this IEnumerable<ITradeCommon> trades)
+        public static IEnumerable<ApiCommonTrade> ToApiModel(this IEnumerable<ITradeCommon> trades, IEnumerable<IAssetPair> assetPairs)
         {
-            return trades.Select(x => x.ToApiModel());
+            return trades.Select(x => x.ToApiModel(assetPairs.GetAssetPairId(x.BaseAsset, x.QuotAsset)));
         }
 
         public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)

@@ -22,7 +22,21 @@ namespace Services
 
         public ICandleshistoryservice TryGet(MarketType market)
         {
-            return _services[market];
+            _services.TryGetValue(market, out var service);
+
+            return service;
+        }
+
+        public ICandleshistoryservice Get(MarketType market)
+        {
+            var service = TryGet(market);
+
+            if (service == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(market), market, "Market not found");
+            }
+
+            return service;
         }
     }
 }

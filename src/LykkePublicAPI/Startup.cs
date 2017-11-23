@@ -95,7 +95,7 @@ namespace LykkePublicAPI
             });
 
             // Sets the spot candles history service as default
-            services.AddSingleton<ICandleshistoryservice>(x => x.GetService<ICandlesHistoryServiceProvider>().TryGet(MarketType.Spot));
+            services.AddSingleton(x => x.GetService<ICandlesHistoryServiceProvider>().Get(MarketType.Spot));
 
             services.AddSingleton<ITradesCommonRepository>(
                 new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.PublicApi.Db.HTradesConnString,

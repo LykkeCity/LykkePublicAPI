@@ -174,8 +174,8 @@ namespace LykkePublicAPI.Controllers
             // HACK: Day and month ticks are starts from 1, AddIntervalTicks takes this into account,
             // so compensate it here
             var toDate = timeInterval == TimeInterval.Day || timeInterval == TimeInterval.Month
-                ? request.DateTime.AddIntervalTicks(2, request.Period.ToDomainModel())
-                : request.DateTime.AddIntervalTicks(1, request.Period.ToDomainModel());
+                ? request.DateTime.AddIntervalTicks(2, timeInterval)
+                : request.DateTime.AddIntervalTicks(1, timeInterval);
 
             var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
             var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);

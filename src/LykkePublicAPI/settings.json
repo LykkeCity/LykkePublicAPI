@@ -31,6 +31,9 @@
   "CandlesHistoryServiceClient": {
     "ServiceUrl": "http://candles-history.lykke-service.svc.cluster.local"
   },
+  "MtCandlesHistoryServiceClient": {
+    "ServiceUrl": "http://mt-candles-history.lykke-mt.svc.cluster.local"
+  },
   "Assets": {
     "ServiceUrl": "http://assets.lykke-service.svc.cluster.local"
   },

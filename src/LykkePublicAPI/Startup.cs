@@ -9,6 +9,7 @@ using Common.Log;
 using Core.Domain.Accounts;
 using Core.Domain.Exchange;
 using Core.Domain.Feed;
+using Core.Domain.Market;
 using Core.Domain.Settings;
 using Core.Feed;
 using Core.Services;
@@ -83,8 +84,18 @@ namespace LykkePublicAPI
                 new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.PublicApi.Db.HTradesConnString,
                     "MarketsData", null)));
 
-            services.AddSingleton<ICandleshistoryservice, Candleshistoryservice>(x => new Candleshistoryservice(
-                new Uri(generalSettings.CandlesHistoryServiceClient.ServiceUrl)));
+            services.AddSingleton<ICandlesHistoryServiceProvider>(x =>
+            {
+                var provider = new CandlesHistoryServiceProvider();
+
+                provider.RegisterMarket(MarketType.Spot, generalSettings.CandlesHistoryServiceClient.ServiceUrl);
+                provider.RegisterMarket(MarketType.Mt, generalSettings.MtCandlesHistoryServiceClient.ServiceUrl);
+
+                return provider;
+            });
+
+            // Sets the spot candles history service as default
+            services.AddSingleton(x => x.GetService<ICandlesHistoryServiceProvider>().Get(MarketType.Spot));
 
             services.AddSingleton<ITradesCommonRepository>(
                 new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.PublicApi.Db.HTradesConnString,

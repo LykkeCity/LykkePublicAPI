@@ -7,6 +7,7 @@ namespace Core.Domain.Settings
     {
         public PublicApiSettings PublicApi { get; set; }
         public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
+        public CandlesHistoryServiceClientSettings MtCandlesHistoryServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }

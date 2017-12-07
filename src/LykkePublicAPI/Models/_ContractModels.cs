@@ -133,7 +133,7 @@ namespace LykkePublicAPI.Models
             };
         }
 
-        public static ApiCommonTrade ToApiModel(this ITradeCommon trade, string assetPair)
+        public static ApiCommonTrade ToApiModel(this ITradeCommon trade)
         {
             return new ApiCommonTrade
             {
@@ -143,13 +143,13 @@ namespace LykkePublicAPI.Models
                 Id = trade.Id,
                 Price = trade.Price,
                 QuotingAssetId = trade.QuotAsset,
-                AssetPair = assetPair
+                AssetPair = trade.AssetPair
             };
         }
 
-        public static IEnumerable<ApiCommonTrade> ToApiModel(this IEnumerable<ITradeCommon> trades, IEnumerable<IAssetPair> assetPairs)
+        public static IEnumerable<ApiCommonTrade> ToApiModel(this IEnumerable<ITradeCommon> trades)
         {
-            return trades.Select(x => x.ToApiModel(assetPairs.GetAssetPairId(x.BaseAsset, x.QuotAsset)));
+            return trades.Select(x => x.ToApiModel());
         }
 
         public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)

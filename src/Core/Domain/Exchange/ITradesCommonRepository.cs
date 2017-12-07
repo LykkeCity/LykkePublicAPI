@@ -8,6 +8,7 @@ namespace Core.Domain.Exchange
     {
         string Id { get; set; }
         DateTime Dt { get; set; }
+        string AssetPair { get; set; }
         string BaseAsset { get; set; }
         string QuotAsset { get; set; }
         double Price { get; set; }
@@ -20,8 +21,11 @@ namespace Core.Domain.Exchange
     {
         public string Id { get; set; }
         public DateTime Dt { get; set; }
+        public string AssetPair { get; set; }
         public string BaseAsset { get; set; }
         public string QuotAsset { get; set; }
+        public string BaseAssetId { get; set; }
+        public string QuotAssetId { get; set; }
         public double Price { get; set; }
         public double Amount { get; set; }
         public string LimitOrderId { get; set; }

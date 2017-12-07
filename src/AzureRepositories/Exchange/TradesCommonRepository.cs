@@ -20,25 +20,9 @@ namespace AzureRepositories.Exchange
             return $"{DateTime.MaxValue.Ticks - dt.Ticks}_{id}";
         }
 
-        public static TradeCommonEntity Create(ITradeCommon trade)
-        {
-            return new TradeCommonEntity
-            {
-                Amount = trade.Amount,
-                BaseAsset = trade.BaseAsset,
-                Dt = trade.Dt,
-                Id = trade.Id,
-                LimitOrderId = trade.LimitOrderId,
-                MarketOrderId = trade.MarketOrderId,
-                PartitionKey = GenerateParitionKey(trade.Dt),
-                Price = trade.Price,
-                QuotAsset = trade.QuotAsset,
-                RowKey = GenerateRowKey(trade.Dt, trade.Id)
-            };
-        }
-
         public string Id { get; set; }
         public DateTime Dt { get; set; }
+        public string AssetPair { get; set; }
         public string BaseAsset { get; set; }
         public string QuotAsset { get; set; }
         public double Price { get; set; }
@@ -55,12 +39,6 @@ namespace AzureRepositories.Exchange
         public TradesCommonRepository(INoSQLTableStorage<TradeCommonEntity> tableStorage)
         {
             _tableStorage = tableStorage;
-        }
-
-        public Task InsertCommonTrade(TradeCommon trade)
-        {
-            var entity = TradeCommonEntity.Create(trade);
-            return _tableStorage.InsertAsync(entity);
         }
 
         public async Task<IEnumerable<ITradeCommon>> GetLastTrades(int n)

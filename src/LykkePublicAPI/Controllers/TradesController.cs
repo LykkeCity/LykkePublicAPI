@@ -12,15 +12,10 @@ namespace LykkePublicAPI.Controllers
     {
         private const int MaxTrades = 500;
         private readonly ITradesCommonRepository _tradesCommonRepository;
-        private readonly ICachedAssetsService _cachedAssetsService;
 
-        public TradesController(
-            ITradesCommonRepository tradesCommonRepository,
-            ICachedAssetsService cachedAssetsService
-            )
+        public TradesController(ITradesCommonRepository tradesCommonRepository)
         {
             _tradesCommonRepository = tradesCommonRepository;
-            _cachedAssetsService = cachedAssetsService;
         }
 
         /// <summary>
@@ -45,9 +40,8 @@ namespace LykkePublicAPI.Controllers
                 });
 
             var trades = await _tradesCommonRepository.GetLastTrades(n);
-            var assetPairs = await _cachedAssetsService.GetAllAssetPairsAsync();
 
-            return Ok(trades.ToApiModel(assetPairs));
+            return Ok(trades.ToApiModel());
         }
     }
 }

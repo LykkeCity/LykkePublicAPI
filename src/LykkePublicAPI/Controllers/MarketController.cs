@@ -1,33 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Domain.Exchange;
 using Core.Domain.Feed;
 using Core.Services;
-using Lykke.Service.Assets.Client.Custom;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using MarketType = Core.Domain.Market.MarketType;
 
 namespace LykkePublicAPI.Controllers
 {
     [Route("api/[controller]")]
     public class MarketController : Controller
     {
-        private readonly IMarketDataRepository _marketDataRepository;
         private readonly IAssetPairBestPriceRepository _marketProfileRepo;
-        private readonly ICachedAssetsService _assetsService;
         private readonly IMarketCapitalizationService _marketCapitalizationService;
+        private readonly ICandlesHistoryServiceProvider _candlesHistoryServiceProvider;
 
-        public MarketController(IMarketDataRepository marketDataRepository,
-            IAssetPairBestPriceRepository marketProfileRepo,
-            ICachedAssetsService assetsService,
-            IMarketCapitalizationService marketCapitalizationService)
+        public MarketController(IAssetPairBestPriceRepository marketProfileRepo,
+            IMarketCapitalizationService marketCapitalizationService,
+            ICandlesHistoryServiceProvider candlesHistoryServiceProvider)
         {
-            _marketDataRepository = marketDataRepository;
             _marketProfileRepo = marketProfileRepo;
-            _assetsService = assetsService;
             _marketCapitalizationService = marketCapitalizationService;
+            _candlesHistoryServiceProvider = candlesHistoryServiceProvider;
         }
 
         /// <summary>
@@ -38,22 +32,27 @@ namespace LykkePublicAPI.Controllers
         public async Task<IEnumerable<ApiMarketData>> Get()
         {
             var marketProfile = await _marketProfileRepo.GetAsync();
-            var result =
-                (await _marketDataRepository.Get24HMarketsAsync()).ToApiModel(marketProfile)
-                    .ToList();
+            var spotCandlesService = _candlesHistoryServiceProvider.Get(MarketType.Spot);
+            
+            // TODO: Get 24 hour candles from spot and MT and calculate result
+            
+//            
+//            var result =
+//                (await _marketDataRepository.Get24HMarketsAsync()).ToApiModel(marketProfile)
+//                    .ToList();
+//
+//            var assetPairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
+//
+//            var emptyRecords =
+//                assetPairs.Where(
+//                    x => result.All(y => y.AssetPair != x.Id) && marketProfile.Profile.Any(z => z.Asset == x.Id));
+//            result.AddRange(emptyRecords.Select(x => new MarketData
+//            {
+//                AssetPairId = x.Id,
+//                Dt = DateTime.UtcNow
+//            }.ToApiModel(marketProfile.Profile.First(y => y.Asset == x.Id))));
 
-            var assetPairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
-
-            var emptyRecords =
-                assetPairs.Where(
-                    x => result.All(y => y.AssetPair != x.Id) && marketProfile.Profile.Any(z => z.Asset == x.Id));
-            result.AddRange(emptyRecords.Select(x => new MarketData
-            {
-                AssetPairId = x.Id,
-                Dt = DateTime.UtcNow
-            }.ToApiModel(marketProfile.Profile.First(y => y.Asset == x.Id))));
-
-            return result;
+            return new ApiMarketData[0];
         }
 
         /// <summary>
@@ -62,18 +61,20 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("{market}")]
         public async Task<ApiMarketData> Get(string market)
         {
-            var feedData = await _marketProfileRepo.GetAsync(market);
-            if (feedData != null)
-            {
-                var marketData = await _marketDataRepository.Get24HMarketsAsync();
-
-                var result = marketData.FirstOrDefault(x => x.AssetPairId == market) ??
-                             new MarketData { AssetPairId = market, Dt = DateTime.UtcNow};
-
-                return result.ToApiModel(feedData);
-            }
-
-            return null;
+//            var feedData = await _marketProfileRepo.GetAsync(market);
+//            if (feedData != null)
+//            {
+//                var marketData = await _marketDataRepository.Get24HMarketsAsync();
+//
+//                var result = marketData.FirstOrDefault(x => x.AssetPairId == market) ??
+//                             new MarketData { AssetPairId = market, Dt = DateTime.UtcNow};
+//
+//                return result.ToApiModel(feedData);
+//            }
+//
+//            return null;
+            
+            return new ApiMarketData();
         }
 
         /// <summary>

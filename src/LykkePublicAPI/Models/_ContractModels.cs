@@ -54,6 +54,7 @@ namespace LykkePublicAPI.Models
         public string Id { get; set; }
         public double? Bid { get; set; }
         public double? Ask { get; set; }
+        public double? TradingVolume { get; set; }
     }
 
     public class ApiMarketData
@@ -194,7 +195,8 @@ namespace LykkePublicAPI.Models
             {
                 Id = assetPairId,
                 Ask = sellCandle?.Close,
-                Bid = buyCandle?.Close
+                Bid = buyCandle?.Close,
+                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume
             };
         }
 

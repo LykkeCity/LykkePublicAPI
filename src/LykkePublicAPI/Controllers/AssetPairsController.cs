@@ -6,11 +6,10 @@ using Core.Services;
 using Lykke.Domain.Prices;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Lykke.Domain.Prices.Contracts;
 using Lykke.Service.Assets.Client.Custom;
-using Prices = Lykke.Domain.Prices;
 using Lykke.Service.CandlesHistory.Client;
-using PriceType = Lykke.Service.CandlesHistory.Client.Models.PriceType;
+using Lykke.Service.CandlesHistory.Client.Models;
+using PriceType = AzureRepositories.Feed.PriceType;
 
 namespace LykkePublicAPI.Controllers
 {
@@ -177,8 +176,8 @@ namespace LykkePublicAPI.Controllers
                 ? request.DateTime.AddIntervalTicks(2, timeInterval)
                 : request.DateTime.AddIntervalTicks(1, timeInterval);
 
-            var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
-            var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, PriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
 
             var buyCandle = buyHistory.History.SingleOrDefault();
             var sellCandle = sellHistory.History.SingleOrDefault();

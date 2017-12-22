@@ -84,6 +84,7 @@ namespace LykkePublicAPI.Models
         public double C { get; set; }
         public double H { get; set; }
         public double L { get; set; }
+        public double V { get; set; }
     }
 
     public class CandlesHistoryResponse
@@ -235,7 +236,8 @@ namespace LykkePublicAPI.Models
                 O = candle.Open,
                 C = candle.Close,
                 H = candle.High,
-                L = candle.Low
+                L = candle.Low,
+                V = candle.TradingVolume
             } : null;
         }
 

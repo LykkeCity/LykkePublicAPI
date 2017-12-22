@@ -173,7 +173,7 @@ namespace LykkePublicAPI.Controllers
                         return null;
                     }
 
-                    return candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, to, from);
+                    return candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
                 });
 
             return candles;
@@ -197,10 +197,10 @@ namespace LykkePublicAPI.Controllers
                         assetPairs = await GetAvailableAssetPairsAsync(market);
                     })
                 .ExecuteAsync(() =>
-                    candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, to, from)
+                    candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to)
                 );
 
-            return candles;
+            return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
         }
 
         private Task<IList<string>> GetAvailableAssetPairsAsync(MarketType market)

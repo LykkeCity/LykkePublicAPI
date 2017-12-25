@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Core.Domain.Exchange;
-using Lykke.Service.Assets.Client.Custom;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +11,9 @@ namespace LykkePublicAPI.Controllers
         private const int MaxTrades = 500;
         private readonly ITradesCommonRepository _tradesCommonRepository;
 
-        public TradesController(ITradesCommonRepository tradesCommonRepository)
+        public TradesController(
+            ITradesCommonRepository tradesCommonRepository
+            )
         {
             _tradesCommonRepository = tradesCommonRepository;
         }
@@ -22,8 +22,8 @@ namespace LykkePublicAPI.Controllers
         /// Get trade volumes for all available assetpairs
         /// </summary>
         /// <returns></returns>
-        [HttpGet("Last")]
-        public async Task<IActionResult> Get([FromQuery] int n)
+        [HttpGet("Last/{assetPair}/{n}")]
+        public async Task<IActionResult> Get(string assetPair, int n)
         {
             if (n <= 0)
                 return BadRequest(new ApiError
@@ -39,7 +39,8 @@ namespace LykkePublicAPI.Controllers
                     Msg = "500 trades max"
                 });
 
-            var trades = await _tradesCommonRepository.GetLastTrades(n);
+
+            var trades = await _tradesCommonRepository.GetLastTrades(assetPair, n);
 
             return Ok(trades.ToApiModel());
         }

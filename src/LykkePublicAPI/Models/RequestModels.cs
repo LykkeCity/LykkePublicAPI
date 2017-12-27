@@ -67,34 +67,34 @@ namespace LykkePublicAPI.Models
     public static class RequestsConvertorsExt
     {
 
-        public static TimeInterval ToCandlesHistoryServiceApiModel(this Period candleType)
+        public static CandleTimeInterval ToCandlesHistoryServiceApiModel(this Period candleType)
         {
             switch (candleType)
             {
                 case Period.Sec:
-                    return TimeInterval.Sec;
+                    return CandleTimeInterval.Sec;
                 case Period.Minute:
-                    return TimeInterval.Minute;
+                    return CandleTimeInterval.Minute;
                 case Period.Min5:
-                    return TimeInterval.Min5;
+                    return CandleTimeInterval.Min5;
                 case Period.Min15:
-                    return TimeInterval.Min15;
+                    return CandleTimeInterval.Min15;
                 case Period.Min30:
-                    return TimeInterval.Min30;
+                    return CandleTimeInterval.Min30;
                 case Period.Hour:
-                    return TimeInterval.Hour;
+                    return CandleTimeInterval.Hour;
                 case Period.Hour4:
-                    return TimeInterval.Hour4;
+                    return CandleTimeInterval.Hour4;
                 case Period.Hour6:
-                    return TimeInterval.Hour6;
+                    return CandleTimeInterval.Hour6;
                 case Period.Hour12:
-                    return TimeInterval.Hour12;
+                    return CandleTimeInterval.Hour12;
                 case Period.Day:
-                    return TimeInterval.Day;
+                    return CandleTimeInterval.Day;
                 case Period.Week:
-                    return TimeInterval.Week;
+                    return CandleTimeInterval.Week;
                 case Period.Month:
-                    return TimeInterval.Month;
+                    return CandleTimeInterval.Month;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(candleType), candleType, null);
             }
@@ -133,16 +133,16 @@ namespace LykkePublicAPI.Models
             }
         }
 
-        public static Lykke.Service.CandlesHistory.Client.Models.PriceType ToCandlesHistoryServiceModel(this PriceType type)
+        public static CandlePriceType ToCandlesHistoryServiceModel(this PriceType type)
         {
             switch (type)
             {
                 case PriceType.Bid:
-                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Bid;
+                    return CandlePriceType.Bid;
                 case PriceType.Ask:
-                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Ask;
+                    return CandlePriceType.Ask;
                 case PriceType.Mid:
-                    return Lykke.Service.CandlesHistory.Client.Models.PriceType.Mid;
+                    return CandlePriceType.Mid;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }

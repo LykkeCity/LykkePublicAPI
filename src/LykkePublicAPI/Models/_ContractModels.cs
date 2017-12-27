@@ -54,6 +54,7 @@ namespace LykkePublicAPI.Models
         public string Id { get; set; }
         public double? Bid { get; set; }
         public double? Ask { get; set; }
+        public double? TradingVolume { get; set; }
     }
 
     public class ApiMarketData
@@ -83,6 +84,7 @@ namespace LykkePublicAPI.Models
         public double C { get; set; }
         public double H { get; set; }
         public double L { get; set; }
+        public double V { get; set; }
     }
 
     public class CandlesHistoryResponse
@@ -152,24 +154,6 @@ namespace LykkePublicAPI.Models
             return trades.Select(x => x.ToApiModel());
         }
 
-        public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)
-        {
-            return new ApiMarketData
-            {
-                Ask = feedData.Ask,
-                AssetPair = marketData.AssetPairId,
-                Bid = feedData.Bid,
-                LastPrice = marketData.LastPrice,
-                Volume24H = marketData.Volume
-            };
-        }
-
-        public static IEnumerable<ApiMarketData> ToApiModel(this IEnumerable<IMarketData> marketData,
-            MarketProfile marketProfile)
-        {
-            return marketData.Select(x => x.ToApiModel(marketProfile.Profile.First(y => y.Asset == x.AssetPairId)));
-        }
-
         public static ApiAssetPair ToApiModel(this IAssetPair assetPair)
         {
             return new ApiAssetPair
@@ -194,7 +178,8 @@ namespace LykkePublicAPI.Models
             {
                 Id = assetPairId,
                 Ask = sellCandle?.Close,
-                Bid = buyCandle?.Close
+                Bid = buyCandle?.Close,
+                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume
             };
         }
 
@@ -233,7 +218,8 @@ namespace LykkePublicAPI.Models
                 O = candle.Open,
                 C = candle.Close,
                 H = candle.High,
-                L = candle.Low
+                L = candle.Low,
+                V = candle.TradingVolume
             } : null;
         }
 

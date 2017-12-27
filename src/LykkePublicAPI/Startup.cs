@@ -80,10 +80,6 @@ namespace LykkePublicAPI
                 new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.PublicApi.Db.HLiquidityConnString,
                     "MarketProfile", null)));
 
-            services.AddSingleton<IMarketDataRepository>(
-                new MarketDataRepository(new AzureTableStorage<MarketDataEntity>(settings.PublicApi.Db.HTradesConnString,
-                    "MarketsData", null)));
-
             services.AddSingleton<ICandlesHistoryServiceProvider>(x =>
             {
                 var provider = new CandlesHistoryServiceProvider();

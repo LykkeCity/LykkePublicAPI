@@ -154,24 +154,6 @@ namespace LykkePublicAPI.Models
             return trades.Select(x => x.ToApiModel());
         }
 
-        public static ApiMarketData ToApiModel(this IMarketData marketData, IFeedData feedData)
-        {
-            return new ApiMarketData
-            {
-                Ask = feedData.Ask,
-                AssetPair = marketData.AssetPairId,
-                Bid = feedData.Bid,
-                LastPrice = marketData.LastPrice,
-                Volume24H = marketData.Volume
-            };
-        }
-
-        public static IEnumerable<ApiMarketData> ToApiModel(this IEnumerable<IMarketData> marketData,
-            MarketProfile marketProfile)
-        {
-            return marketData.Select(x => x.ToApiModel(marketProfile.Profile.First(y => y.Asset == x.AssetPairId)));
-        }
-
         public static ApiAssetPair ToApiModel(this IAssetPair assetPair)
         {
             return new ApiAssetPair

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Core</AssemblyName>
@@ -8,7 +7,6 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="1.1.94" />
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
@@ -16,5 +14,4 @@
     <PackageReference Include="Lykke.MarketProfileService.Client" Version="1.0.19" />
     <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="1.1.1" />
   </ItemGroup>
-
 </Project>

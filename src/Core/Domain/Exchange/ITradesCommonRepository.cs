@@ -34,6 +34,6 @@ namespace Core.Domain.Exchange
 
     public interface ITradesCommonRepository
     {
-        Task<IEnumerable<ITradeCommon>> GetLastTrades(int n);
+        Task<IEnumerable<ITradeCommon>> GetLastTrades(string assetPair, int n);
     }
 }

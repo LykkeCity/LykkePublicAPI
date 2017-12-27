@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using Core.Domain.Exchange;
@@ -10,9 +9,9 @@ namespace AzureRepositories.Exchange
 {
     public class TradeCommonEntity : TableEntity, ITradeCommon
     {
-        public static string GenerateParitionKey(DateTime dt)
+        public static string GenerateParitionKey(string assetPair)
         {
-            return $"{dt.Year}-{dt.Month}-{dt.Day}";
+            return assetPair.ToUpper();
         }
 
         public static string GenerateRowKey(DateTime dt, string id)
@@ -34,28 +33,15 @@ namespace AzureRepositories.Exchange
     public class TradesCommonRepository : ITradesCommonRepository
     {
         private readonly INoSQLTableStorage<TradeCommonEntity> _tableStorage;
-        private const int DaysLimit = 7;
 
         public TradesCommonRepository(INoSQLTableStorage<TradeCommonEntity> tableStorage)
         {
             _tableStorage = tableStorage;
         }
 
-        public async Task<IEnumerable<ITradeCommon>> GetLastTrades(int n)
+        public async Task<IEnumerable<ITradeCommon>> GetLastTrades(string assetPair, int n)
         {
-            List<ITradeCommon> trades = new List<ITradeCommon>();
-            var currentDt = DateTime.UtcNow;
-            for (int i = 0; i < DaysLimit; ++i)
-            {
-                trades.AddRange(await _tableStorage.GetTopRecordsAsync(TradeCommonEntity.GenerateParitionKey(currentDt), n));
-
-                if (trades.Count == n)
-                    return trades;
-
-                currentDt = currentDt.Subtract(TimeSpan.FromDays(1));
-            }
-
-            return trades;
+            return await _tableStorage.GetTopRecordsAsync(TradeCommonEntity.GenerateParitionKey(assetPair), n);
         }
     }
 }

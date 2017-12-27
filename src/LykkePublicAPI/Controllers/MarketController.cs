@@ -73,6 +73,8 @@ namespace LykkePublicAPI.Controllers
                     {
                         AssetPair = assetCandles.Key
                     };
+
+                    result.Add(assetCandles.Key, marketData);
                 }
 
                 marketData.LastPrice = assetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0;
@@ -88,6 +90,8 @@ namespace LykkePublicAPI.Controllers
                         AssetPair = assetCandles.Key,
                         LastPrice = assetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0
                     };
+
+                    result.Add(assetCandles.Key, marketData);
                 }
                 
                 marketData.Volume24H += assetCandles.Value.History.Sum(c => c.TradingVolume);
@@ -170,7 +174,7 @@ namespace LykkePublicAPI.Controllers
                 {
                     if (!assetPairs.Contains(assetPair))
                     {
-                        return null;
+                        throw new InvalidOperationException($"Asset pair {assetPair} is unavailable");
                     }
 
                     return candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);

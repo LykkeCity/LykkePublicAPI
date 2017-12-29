@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
-using PriceType = AzureRepositories.Feed.PriceType;
 
 namespace LykkePublicAPI.Controllers
 {
@@ -17,18 +16,18 @@ namespace LykkePublicAPI.Controllers
     public class AssetPairsController : Controller
     {
         private readonly ICachedAssetsService _assetsService;
-        private readonly ICandleshistoryservice _candlesHistoryService;
+        private readonly ICandlesHistoryServiceProvider _candlesServiceProvider;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
         private readonly IMarketProfileService _marketProfileService;
 
         public AssetPairsController(
             ICachedAssetsService assetsService,
-            ICandleshistoryservice candlesHistoryService, 
+            ICandlesHistoryServiceProvider candlesServiceProvider, 
             IFeedHistoryRepository feedHistoryRepository,
             IMarketProfileService marketProfileService)
         {
             _assetsService = assetsService;
-            _candlesHistoryService = candlesHistoryService;
+            _candlesServiceProvider = candlesServiceProvider;
             _feedHistoryRepository = feedHistoryRepository;
             _marketProfileService = marketProfileService;
         }
@@ -63,10 +62,19 @@ namespace LykkePublicAPI.Controllers
         /// <summary>
         /// Get asset pairs dictionary
         /// </summary>
-        [HttpGet("dictionary")]
-        public async Task<IEnumerable<ApiAssetPair>> GetDictionary()
+        [HttpGet("dictionary/{market?}")]
+        public async Task<IEnumerable<ApiAssetPair>> GetDictionary([FromRoute] MarketType? market)
         {
             var pairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
+
+            //for now for MT we display only asset pairs configured in candles
+            if (market == MarketType.Mt)
+            {
+                var mtPairs = await _candlesServiceProvider.Get(Core.Domain.Market.MarketType.Mt)
+                    .GetAvailableAssetPairsAsync();
+
+                pairs = pairs.Where(p => mtPairs.Contains(p.Id));
+            }
 
             return pairs.ToApiModel();
         }
@@ -176,8 +184,10 @@ namespace LykkePublicAPI.Controllers
                 ? request.DateTime.AddIntervalTicks(2, timeInterval)
                 : request.DateTime.AddIntervalTicks(1, timeInterval);
 
-            var buyHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
-            var sellHistory = await _candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var candlesHistoryService = _candlesServiceProvider.Get(Core.Domain.Market.MarketType.Spot);
+            
+            var buyHistory = await candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var sellHistory = await candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
 
             var buyCandle = buyHistory.History.SingleOrDefault();
             var sellCandle = sellHistory.History.SingleOrDefault();

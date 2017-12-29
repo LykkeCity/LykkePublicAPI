@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Core.Services;
 using LykkePublicAPI.Models;
 using Lykke.Service.CandlesHistory.Client;
+using Lykke.Service.CandlesHistory.Client.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LykkePublicAPI.Controllers
@@ -65,12 +66,29 @@ namespace LykkePublicAPI.Controllers
                 });
             }
 
-            var history = await candlesService.GetCandlesHistoryAsync(
-                assetPairId,
-                request.Type.Value.ToCandlesHistoryServiceModel(),
-                request.Period.Value.ToCandlesHistoryServiceApiModel(),
-                request.DateFrom.Value,
-                request.DateTo.Value);
+            CandlesHistoryResponseModel history;
+            
+            try
+            {
+                history = await candlesService.GetCandlesHistoryAsync(
+                    assetPairId,
+                    request.Type.Value.ToCandlesHistoryServiceModel(),
+                    request.Period.Value.ToCandlesHistoryServiceApiModel(),
+                    request.DateFrom.Value,
+                    request.DateTo.Value);
+            }
+            catch (Lykke.Service.CandlesHistory.Client.Custom.ErrorResponseException e)
+            {
+                var errorMessage = e.Error.ErrorMessages != null && e.Error.ErrorMessages.Any()
+                    ? string.Join(",", e.Error.ErrorMessages.Values.SelectMany(msg => msg).ToArray())
+                    : "History for asset pair is not available";
+                
+                return BadRequest(new ApiError
+                {
+                    Code = ErrorCodes.InvalidInput,
+                    Msg = errorMessage
+                });
+            }
 
             var response = new CandlesHistoryResponse
             {

@@ -12,6 +12,6 @@
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.MarketProfileService.Client" Version="1.0.19" />
-    <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="1.1.1" />
+    <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="1.2.1" />
   </ItemGroup>
 </Project>

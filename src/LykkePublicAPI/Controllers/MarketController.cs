@@ -78,7 +78,7 @@ namespace LykkePublicAPI.Controllers
                 }
 
                 marketData.LastPrice = assetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0;
-                marketData.Volume24H = assetCandles.Value.History.Sum(c => c.TradingVolume);
+                marketData.Volume24H = assetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
             }
 
             foreach (var assetCandles in mtCandles)
@@ -94,7 +94,7 @@ namespace LykkePublicAPI.Controllers
                     result.Add(assetCandles.Key, marketData);
                 }
                 
-                marketData.Volume24H += assetCandles.Value.History.Sum(c => c.TradingVolume);
+                marketData.Volume24H += assetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
             }
 
             return result.Values;
@@ -136,8 +136,8 @@ namespace LykkePublicAPI.Controllers
                 result.LastPrice = mtCandles.History.LastOrDefault()?.LastTradePrice ?? 0;
             }
 
-            result.Volume24H = (spotCandles?.History.Sum(c => c.TradingVolume) ?? 0) +
-                               (mtCandles?.History.Sum(c => c.TradingVolume) ?? 0);
+            result.Volume24H = (spotCandles?.History.Sum(c => c.TradingOppositeVolume) ?? 0) +
+                               (mtCandles?.History.Sum(c => c.TradingOppositeVolume) ?? 0);
 
             return result;
         }

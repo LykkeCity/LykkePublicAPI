@@ -55,6 +55,7 @@ namespace LykkePublicAPI.Models
         public double? Bid { get; set; }
         public double? Ask { get; set; }
         public double? TradingVolume { get; set; }
+        public double? TradingOppositeVolume { get; set; }
     }
 
     public class ApiMarketData
@@ -85,6 +86,7 @@ namespace LykkePublicAPI.Models
         public double H { get; set; }
         public double L { get; set; }
         public double V { get; set; }
+        public double OV { get; set; }
     }
 
     public class CandlesHistoryResponse
@@ -179,7 +181,8 @@ namespace LykkePublicAPI.Models
                 Id = assetPairId,
                 Ask = sellCandle?.Close,
                 Bid = buyCandle?.Close,
-                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume
+                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume,
+                TradingOppositeVolume = buyCandle?.TradingOppositeVolume ?? sellCandle?.TradingOppositeVolume
             };
         }
 
@@ -219,7 +222,8 @@ namespace LykkePublicAPI.Models
                 C = candle.Close,
                 H = candle.High,
                 L = candle.Low,
-                V = candle.TradingVolume
+                V = candle.TradingVolume,
+                OV = candle.TradingOppositeVolume
             } : null;
         }
 

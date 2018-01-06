@@ -127,17 +127,17 @@ namespace LykkePublicAPI.Controllers
                 result.Bid = assetProfile?.Bid ?? 0;
             }
 
-            if (spotCandles != null)
+            if (spotCandles.History.Any())
             {
-                result.LastPrice = spotCandles.History.LastOrDefault()?.LastTradePrice ?? 0;
+                result.LastPrice = spotCandles.History.Last().LastTradePrice;
             }
-            else if(mtCandles != null)
+            else if(mtCandles.History.Any())
             {
-                result.LastPrice = mtCandles.History.LastOrDefault()?.LastTradePrice ?? 0;
+                result.LastPrice = mtCandles.History.Last().LastTradePrice;
             }
 
-            result.Volume24H = (spotCandles?.History.Sum(c => c.TradingOppositeVolume) ?? 0) +
-                               (mtCandles?.History.Sum(c => c.TradingOppositeVolume) ?? 0);
+            result.Volume24H = spotCandles.History.Sum(c => c.TradingOppositeVolume) +
+                               mtCandles.History.Sum(c => c.TradingOppositeVolume);
 
             return result;
         }
@@ -160,25 +160,15 @@ namespace LykkePublicAPI.Controllers
             var to = DateTime.UtcNow; // exclusive
             var from = to - TimeSpan.FromHours(25); // inclusive
 
-            var candles = await Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.Zero,
-                    },
-                    async (ex, ts, c) =>
-                    {
-                        assetPairs = await GetAvailableAssetPairsAsync(market);
-                    })
-                .ExecuteAsync(() =>
+            if (!assetPairs.Contains(assetPair))
+            {
+                return new CandlesHistoryResponseModel
                 {
-                    if (!assetPairs.Contains(assetPair))
-                    {
-                        throw new InvalidOperationException($"Asset pair {assetPair} is unavailable");
-                    }
+                    History = new List<Candle>()
+                };
+            }
 
-                    return candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
-                });
+            var candles = await candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
 
             return candles;
         }
@@ -190,19 +180,7 @@ namespace LykkePublicAPI.Controllers
             var to = DateTime.UtcNow; // exclusive
             var from = to - TimeSpan.FromHours(25); // inclusive
 
-            var candles = await Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.Zero,
-                    },
-                    async (ex, ts, c) =>
-                    {
-                        assetPairs = await GetAvailableAssetPairsAsync(market);
-                    })
-                .ExecuteAsync(() =>
-                    candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to)
-                );
+            var candles = await candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
 
             return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
         }
@@ -233,7 +211,8 @@ namespace LykkePublicAPI.Controllers
                                         TimeSpan.FromSeconds(10)
                                     })
                                 .ExecuteAsync(() => candlesService.GetAvailableAssetPairsAsync());
-                        }));
+                        },
+                        absoluteExpiration: TimeSpan.FromHours(1)));
         }
     }
 }

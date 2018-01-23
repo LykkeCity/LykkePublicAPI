@@ -12,6 +12,7 @@ namespace Core.Domain.Settings
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
+        public RegistrationServiceClientSettings RegistrationServiceClient { get; set; }
     }
 
     public class RateLimitSettings
@@ -55,6 +56,11 @@ namespace Core.Domain.Settings
     public class MarketProfileServiceClientSettings
     {
         [HttpCheck("/api/isalive")]
+        public string ServiceUrl { get; set; }
+    }
+    
+    public class RegistrationServiceClientSettings
+    {
         public string ServiceUrl { get; set; }
     }
 

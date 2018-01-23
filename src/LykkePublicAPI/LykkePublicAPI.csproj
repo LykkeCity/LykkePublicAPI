@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NoWarn>$(NoWarn);1591;1573</NoWarn>
@@ -10,37 +9,34 @@
     <PackageId>LykkePublicAPI</PackageId>
     <Version>1.0.0</Version>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
     <None Update="wwwroot\**\*;docker-compose.yml;Dockerfile;.dockerignore">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\AzureRepositories\AzureRepositories.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
-  
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <ItemGroup>
       <DocFile Include="bin\*\*\LykkePublicAPI.xml" />
     </ItemGroup>
     <Copy SourceFiles="@(DocFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="false" />
   </Target>
-
   <ItemGroup>
+    <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.0.1" />
+    <PackageReference Include="Lykke.Logs" Version="3.5.1" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.11" />
-    <PackageReference Include="Lykke.Logs" Version="1.0.29" />
-    <PackageReference Include="Lykke.SettingsReader" Version="1.0.45" />
-    <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="1.0.4" />
+    <PackageReference Include="Lykke.Service.Registration" Version="1.1.1" />
+    <PackageReference Include="Lykke.SettingsReader" Version="1.1.4" />
+    <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.1" />
     <PackageReference Include="Polly" Version="5.6.1" />
     <PackageReference Include="Swashbuckle" Version="6.0.0-beta902" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.0" />
@@ -61,5 +57,4 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
   </ItemGroup>
-
 </Project>

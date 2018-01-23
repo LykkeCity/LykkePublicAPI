@@ -11,6 +11,7 @@ namespace Core.Domain.Settings
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
+        public RegistrationServiceClientSettings RegistrationServiceClient { get; set; }
     }
 
     public class SlackNotificationsSettings
@@ -35,6 +36,11 @@ namespace Core.Domain.Settings
     }
 
     public class MarketProfileServiceClientSettings
+    {
+        public string ServiceUrl { get; set; }
+    }
+    
+    public class RegistrationServiceClientSettings
     {
         public string ServiceUrl { get; set; }
     }

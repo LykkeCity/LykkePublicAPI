@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using AzureRepositories;
 using AzureRepositories.Accounts;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
@@ -22,12 +21,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
-using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Lykke.MarketProfileService.Client;
+using Lykke.Service.Registration;
 using Microsoft.AspNetCore.Http;
 
 namespace LykkePublicAPI
@@ -54,13 +53,9 @@ namespace LykkePublicAPI
 
         public void ConfigureServices(IServiceCollection services)
         {
-#if DEBUG
-            var generalSettings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]);
-#else
-            var generalSettings = HttpSettingsLoader.Load<Settings>(Configuration["ConnectionString"]);
-#endif
-            var settings = generalSettings;
-
+            var appSettings = Configuration.LoadSettings<Settings>();
+            var settings = appSettings.CurrentValue;
+            
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddMemoryCache();
@@ -70,22 +65,22 @@ namespace LykkePublicAPI
             services.AddSingleton(settings.PublicApi.CompanyInfo);
 
             services.UseAssetsClient(AssetServiceSettings.Create(
-                new Uri(generalSettings.Assets.ServiceUrl), 
+                new Uri(settings.Assets.ServiceUrl), 
                 settings.PublicApi.AssetsCache.ExpirationPeriod));
 
-            var log = CreateLogWithSlack(services, settings);
+            var log = CreateLogWithSlack(services, appSettings);
             services.AddSingleton(log);
 
             services.AddSingleton<IAssetPairBestPriceRepository>(
-                new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.PublicApi.Db.HLiquidityConnString,
+                new AssetPairBestPriceRepository(AzureTableStorage<FeedDataEntity>.Create(appSettings.ConnectionString(x => x.PublicApi.Db.HLiquidityConnString),
                     "MarketProfile", null)));
 
             services.AddSingleton<ICandlesHistoryServiceProvider>(x =>
             {
                 var provider = new CandlesHistoryServiceProvider();
 
-                provider.RegisterMarket(MarketType.Spot, generalSettings.CandlesHistoryServiceClient.ServiceUrl);
-                provider.RegisterMarket(MarketType.Mt, generalSettings.MtCandlesHistoryServiceClient.ServiceUrl);
+                provider.RegisterMarket(MarketType.Spot, settings.CandlesHistoryServiceClient.ServiceUrl);
+                provider.RegisterMarket(MarketType.Mt, settings.MtCandlesHistoryServiceClient.ServiceUrl);
 
                 return provider;
             });
@@ -94,14 +89,14 @@ namespace LykkePublicAPI
             services.AddSingleton(x => x.GetService<ICandlesHistoryServiceProvider>().Get(MarketType.Spot));
 
             services.AddSingleton<ITradesCommonRepository>(
-                new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.PublicApi.Db.HTradesConnString,
+                new TradesCommonRepository(AzureTableStorage<TradeCommonEntity>.Create(appSettings.ConnectionString(x => x.PublicApi.Db.HTradesConnString),
                     "TradesCommon", null)));
             services.AddSingleton<IFeedHistoryRepository>(
-                new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.PublicApi.Db.HLiquidityConnString,
+                new FeedHistoryRepository(AzureTableStorage<FeedHistoryEntity>.Create(appSettings.ConnectionString(x => x.PublicApi.Db.HLiquidityConnString),
                     "FeedHistory", null)));
 
             services.AddSingleton<IWalletsRepository>(
-                new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.PublicApi.Db.BalancesInfoConnString,
+                new WalletsRepository(AzureTableStorage<WalletEntity>.Create(appSettings.ConnectionString(x => x.PublicApi.Db.BalancesInfoConnString),
                     "Accounts", null)));
 
             services.AddDistributedRedisCache(options =>
@@ -111,12 +106,13 @@ namespace LykkePublicAPI
             });
 
             services.AddSingleton<ILykkeMarketProfileServiceAPI>(x => new LykkeMarketProfileServiceAPI(
-                new Uri(generalSettings.MarketProfileServiceClient.ServiceUrl)));
+                new Uri(settings.MarketProfileServiceClient.ServiceUrl)));
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
             services.AddTransient<IMarketProfileService, MarketProfileService>();
             services.AddTransient<ISrvRatesHelper, SrvRateHelper>();
+            services.AddSingleton<ILykkeRegistrationClient>(x => new LykkeRegistrationClient(settings.RegistrationServiceClient.ServiceUrl, log));
 
             services.AddMvc();
 
@@ -183,44 +179,47 @@ namespace LykkePublicAPI
             Console.WriteLine("Cleaned up");
         }
 
-        private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings)
+        private static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<Settings> settings)
         {
             var consoleLogger = new LogToConsole();
             var aggregateLogger = new AggregateLogger();
 
             aggregateLogger.AddLog(consoleLogger);
 
+            var dbLogConnectionStringManager = settings.Nested(x => x.PublicApi.Db.LogsConnString);
+            var dbLogConnectionString = dbLogConnectionStringManager.CurrentValue;
+
+            if (string.IsNullOrEmpty(dbLogConnectionString))
+            {
+                consoleLogger.WriteWarningAsync(nameof(Startup), nameof(CreateLogWithSlack), "Table loggger is not inited").Wait();
+                return aggregateLogger;
+            }
+
+            if (dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}"))
+                throw new InvalidOperationException($"LogsConnString {dbLogConnectionString} is not filled in settings");
+
+            var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
+                AzureTableStorage<LogEntity>.Create(dbLogConnectionStringManager, "PublicAPILog", consoleLogger),
+                consoleLogger);
+
             // Creating slack notification service, which logs own azure queue processing messages to aggregate log
             var slackService = services.UseSlackNotificationsSenderViaAzureQueue(new Lykke.AzureQueueIntegration.AzureQueueSettings
             {
-                ConnectionString = settings.SlackNotifications.AzureQueue.ConnectionString,
-                QueueName = settings.SlackNotifications.AzureQueue.QueueName
+                ConnectionString = settings.CurrentValue.SlackNotifications.AzureQueue.ConnectionString,
+                QueueName = settings.CurrentValue.SlackNotifications.AzureQueue.QueueName
             }, aggregateLogger);
 
-            var dbLogConnectionString = settings.PublicApi.Db.LogsConnString;
+            var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(slackService, consoleLogger);
 
             // Creating azure storage logger, which logs own messages to concole log
-            if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
-            {
-                const string appName = "PublicAPI";
+            var azureStorageLogger = new LykkeLogToAzureStorage(
+                persistenceManager,
+                slackNotificationsManager,
+                consoleLogger);
 
-                var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
-                    appName,
-                    AzureTableStorage<LogEntity>.Create(() => dbLogConnectionString, "PublicAPILog", consoleLogger),
-                    consoleLogger);
+            azureStorageLogger.Start();
 
-                var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(appName, slackService, consoleLogger);
-
-                var azureStorageLogger = new LykkeLogToAzureStorage(
-                    appName,
-                    persistenceManager,
-                    slackNotificationsManager,
-                    consoleLogger);
-
-                azureStorageLogger.Start();
-
-                aggregateLogger.AddLog(azureStorageLogger);
-            }
+            aggregateLogger.AddLog(azureStorageLogger);
 
             return aggregateLogger;
         }

@@ -57,3 +57,4 @@ node_modules
 # DNX
 project.lock.json
 artifacts/
+/src/LykkePublicAPI/Properties/launchSettings.json

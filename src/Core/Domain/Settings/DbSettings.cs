@@ -13,6 +13,22 @@ namespace Core.Domain.Settings
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
     }
 
+    public class RateLimitSettings
+    {
+        public class RateLimitCoreOptions
+        {
+            public IReadOnlyList<RateLimitRule> GeneralRules { get; set; }
+            public bool StackBlockedRequests { get; set; }
+            public bool EnableEndpointRateLimiting { get; set; }
+        }
+        public class RateLimitRule
+        {
+            public string Endpoint { get; set; }
+            public string Period { get; set; }
+            public long Limit { get; set; }
+        }
+    }
+
     public class SlackNotificationsSettings
     {
         public AzureQueueSettings AzureQueue { get; set; }
@@ -32,6 +48,7 @@ namespace Core.Domain.Settings
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
         public AssetsCacheSettings AssetsCache { get; set; }
+        public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
     }
 
     public class MarketProfileServiceClientSettings
@@ -74,6 +91,8 @@ namespace Core.Domain.Settings
         public string RedisConfiguration { get; set; }
 
         public string OrderBooksCacheKeyPattern { get; set; }
+        public string ThrottlingRedisConfiguration { get; set; }
+        public string ThrottlingInstanceName { get; set; }
     }
 
     public static class CacheSettingsExt

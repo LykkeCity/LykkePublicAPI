@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using AzureRepositories;
+using System.Linq;
+using AspNetCoreRateLimit;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using AzureRepositories.Accounts;
 using AzureRepositories.Exchange;
 using AzureRepositories.Feed;
@@ -22,13 +26,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using Services;
 using Swashbuckle.Swagger.Model;
-using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Lykke.MarketProfileService.Client;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Redis;
+using Microsoft.Extensions.Options;
 
 namespace LykkePublicAPI
 {
@@ -38,8 +43,6 @@ namespace LykkePublicAPI
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
             if (env.IsDevelopment())
@@ -52,14 +55,13 @@ namespace LykkePublicAPI
 
         public IConfigurationRoot Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-#if DEBUG
-            var generalSettings = GeneralSettingsReader.ReadGeneralSettingsLocal<Settings>(Configuration["ConnectionString"]);
-#else
-            var generalSettings = HttpSettingsLoader.Load<Settings>(Configuration["ConnectionString"]);
-#endif
-            var settings = generalSettings;
+            var builder = new ContainerBuilder();
+
+            var appSettings = Configuration.LoadSettings<Settings>();
+            var settings = appSettings.CurrentValue;
+            var dbSettings = appSettings.Nested(x => x.PublicApi.Db);
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -70,22 +72,30 @@ namespace LykkePublicAPI
             services.AddSingleton(settings.PublicApi.CompanyInfo);
 
             services.UseAssetsClient(AssetServiceSettings.Create(
-                new Uri(generalSettings.Assets.ServiceUrl), 
+                new Uri(settings.Assets.ServiceUrl), 
                 settings.PublicApi.AssetsCache.ExpirationPeriod));
 
-            var log = CreateLogWithSlack(services, settings);
+            var log = CreateLogWithSlack(services, settings, dbSettings);
+
             services.AddSingleton(log);
 
+            ConfigureRateLimits(
+                settings.PublicApi.CacheSettings,
+                services,
+                settings.PublicApi.IpRateLimiting);
+
             services.AddSingleton<IAssetPairBestPriceRepository>(
-                new AssetPairBestPriceRepository(new AzureTableStorage<FeedDataEntity>(settings.PublicApi.Db.HLiquidityConnString,
-                    "MarketProfile", null)));
+                new AssetPairBestPriceRepository(AzureTableStorage<FeedDataEntity>.Create(
+                    dbSettings.ConnectionString(x => x.HLiquidityConnString),
+                    "MarketProfile",
+                    null)));
 
             services.AddSingleton<ICandlesHistoryServiceProvider>(x =>
             {
                 var provider = new CandlesHistoryServiceProvider();
 
-                provider.RegisterMarket(MarketType.Spot, generalSettings.CandlesHistoryServiceClient.ServiceUrl);
-                provider.RegisterMarket(MarketType.Mt, generalSettings.MtCandlesHistoryServiceClient.ServiceUrl);
+                provider.RegisterMarket(MarketType.Spot, settings.CandlesHistoryServiceClient.ServiceUrl);
+                provider.RegisterMarket(MarketType.Mt, settings.MtCandlesHistoryServiceClient.ServiceUrl);
 
                 return provider;
             });
@@ -94,15 +104,21 @@ namespace LykkePublicAPI
             services.AddSingleton(x => x.GetService<ICandlesHistoryServiceProvider>().Get(MarketType.Spot));
 
             services.AddSingleton<ITradesCommonRepository>(
-                new TradesCommonRepository(new AzureTableStorage<TradeCommonEntity>(settings.PublicApi.Db.HTradesConnString,
-                    "TradesCommon", null)));
+                new TradesCommonRepository(AzureTableStorage<TradeCommonEntity>.Create(
+                    dbSettings.ConnectionString(x => x.HTradesConnString),
+                    "TradesCommon",
+                    null)));
             services.AddSingleton<IFeedHistoryRepository>(
-                new FeedHistoryRepository(new AzureTableStorage<FeedHistoryEntity>(settings.PublicApi.Db.HLiquidityConnString,
-                    "FeedHistory", null)));
+                new FeedHistoryRepository(AzureTableStorage<FeedHistoryEntity>.Create(
+                    dbSettings.ConnectionString(x => x.HLiquidityConnString),
+                    "FeedHistory",
+                    null)));
 
             services.AddSingleton<IWalletsRepository>(
-                new WalletsRepository(new AzureTableStorage<WalletEntity>(settings.PublicApi.Db.BalancesInfoConnString,
-                    "Accounts", null)));
+                new WalletsRepository(AzureTableStorage<WalletEntity>.Create(
+                    dbSettings.ConnectionString(x => x.BalancesInfoConnString),
+                    "Accounts",
+                    null)));
 
             services.AddDistributedRedisCache(options =>
             {
@@ -111,7 +127,7 @@ namespace LykkePublicAPI
             });
 
             services.AddSingleton<ILykkeMarketProfileServiceAPI>(x => new LykkeMarketProfileServiceAPI(
-                new Uri(generalSettings.MarketProfileServiceClient.ServiceUrl)));
+                new Uri(settings.MarketProfileServiceClient.ServiceUrl)));
 
             services.AddTransient<IOrderBooksService, OrderBookService>();
             services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
@@ -140,6 +156,12 @@ namespace LykkePublicAPI
                 var xmlPath = Path.Combine(basePath, "LykkePublicAPI.xml");
                 options.IncludeXmlComments(xmlPath);
             });
+
+            builder.Populate(services);
+
+            var applicationContainer = builder.Build();
+
+            return new AutofacServiceProvider(applicationContainer);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -166,6 +188,7 @@ namespace LykkePublicAPI
             }
 
             app.UseLykkeMiddleware("PublicAPI", ex => new { Message = "Technical problem" });
+            app.UseClientRateLimiting();
 
             app.UseMvc();
 
@@ -183,7 +206,7 @@ namespace LykkePublicAPI
             Console.WriteLine("Cleaned up");
         }
 
-        private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings)
+        private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings, IReloadingManager<DbSettings> dbSettings)
         {
             var consoleLogger = new LogToConsole();
             var aggregateLogger = new AggregateLogger();
@@ -197,7 +220,7 @@ namespace LykkePublicAPI
                 QueueName = settings.SlackNotifications.AzureQueue.QueueName
             }, aggregateLogger);
 
-            var dbLogConnectionString = settings.PublicApi.Db.LogsConnString;
+            var dbLogConnectionString = dbSettings.CurrentValue.LogsConnString;
 
             // Creating azure storage logger, which logs own messages to concole log
             if (!string.IsNullOrEmpty(dbLogConnectionString) && !(dbLogConnectionString.StartsWith("${") && dbLogConnectionString.EndsWith("}")))
@@ -206,7 +229,7 @@ namespace LykkePublicAPI
 
                 var persistenceManager = new LykkeLogToAzureStoragePersistenceManager(
                     appName,
-                    AzureTableStorage<LogEntity>.Create(() => dbLogConnectionString, "PublicAPILog", consoleLogger),
+                    AzureTableStorage<LogEntity>.Create(dbSettings.ConnectionString(x => x.LogsConnString), "PublicAPILog", consoleLogger),
                     consoleLogger);
 
                 var slackNotificationsManager = new LykkeLogToAzureSlackNotificationsManager(appName, slackService, consoleLogger);
@@ -223,6 +246,34 @@ namespace LykkePublicAPI
             }
 
             return aggregateLogger;
+        }
+
+        private void ConfigureRateLimits(CacheSettings settings, IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
+        {
+            services.Configure<ClientRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
+                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
+                options.GeneralRules = rateLimitOptions.GeneralRules
+                    .Select(x => new RateLimitRule
+                    {
+                        Endpoint = x.Endpoint,
+                        Limit = x.Limit,
+                        PeriodTimespan = x.Period
+                    })
+                    .ToList();
+            });
+
+            var cache = new RedisCache(new RedisCacheOptions
+            {
+                Configuration = settings.ThrottlingRedisConfiguration,
+                InstanceName = settings.ThrottlingInstanceName
+            });
+
+            services.AddSingleton<IClientPolicyStore>(c => new DistributedCacheClientPolicyStore(
+                cache,
+                c.GetService<IOptions<ClientRateLimitOptions>>()));
+            services.AddSingleton<IRateLimitCounterStore>(c => new DistributedCacheRateLimitCounterStore(cache));
         }
     }
 }

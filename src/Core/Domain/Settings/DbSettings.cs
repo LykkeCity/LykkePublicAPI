@@ -24,7 +24,7 @@ namespace Core.Domain.Settings
         public class RateLimitRule
         {
             public string Endpoint { get; set; }
-            public TimeSpan Period { get; set; }
+            public string Period { get; set; }
             public long Limit { get; set; }
         }
     }

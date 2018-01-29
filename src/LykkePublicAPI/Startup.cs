@@ -259,7 +259,7 @@ namespace LykkePublicAPI
                     {
                         Endpoint = x.Endpoint,
                         Limit = x.Limit,
-                        PeriodTimespan = x.Period
+                        Period = x.Period
                     })
                     .ToList();
             });

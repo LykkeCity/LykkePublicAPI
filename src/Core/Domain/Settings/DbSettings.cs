@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lykke.SettingsReader.Attributes;
 
 namespace Core.Domain.Settings
 {
@@ -53,11 +54,13 @@ namespace Core.Domain.Settings
 
     public class MarketProfileServiceClientSettings
     {
+        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
 
     public class AssetsSettings
     {
+        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
 
@@ -68,6 +71,7 @@ namespace Core.Domain.Settings
 
     public class CandlesHistoryServiceClientSettings
     {
+        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
 
@@ -89,10 +93,12 @@ namespace Core.Domain.Settings
     {
         public string FinanceDataCacheInstance { get; set; }
         public string RedisConfiguration { get; set; }
-
         public string OrderBooksCacheKeyPattern { get; set; }
         public string ThrottlingRedisConfiguration { get; set; }
         public string ThrottlingInstanceName { get; set; }
+        public string CommonRedisConfiguration { get; set; }
+        [Optional]
+        public string CommonRedisInstanceName { get; set; }
     }
 
     public static class CacheSettingsExt

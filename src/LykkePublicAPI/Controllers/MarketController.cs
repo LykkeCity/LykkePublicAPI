@@ -197,7 +197,7 @@ namespace LykkePublicAPI.Controllers
                 })
                 .ExecuteAsync(() =>
                     _cache.TryGetFromCacheAsync(
-                        $":CandlesHistory:{market}:AvailableAssetPairs",
+                        $"CandlesHistory:{market}:AvailableAssetPairs",
                         () =>
                         {
                             var candlesService = _candlesHistoryServiceProvider.Get(market);

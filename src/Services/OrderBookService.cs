@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Autofac.Features.AttributeFilters;
 using Common;
+using Core;
 using Core.Domain.Settings;
 using Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
@@ -16,7 +18,7 @@ namespace Services
         private readonly PublicApiSettings _settings;
         private readonly ICachedAssetsService _assetsService;
 
-        public OrderBookService(IDistributedCache distributedCache,
+        public OrderBookService([KeyFilter(CacheType.FinanceData)] IDistributedCache distributedCache,
             PublicApiSettings settings,
             ICachedAssetsService assetsService)
         {

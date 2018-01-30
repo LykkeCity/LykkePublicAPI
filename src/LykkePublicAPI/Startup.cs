@@ -1,22 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using AzureRepositories.Accounts;
-using AzureRepositories.Exchange;
-using AzureRepositories.Feed;
 using AzureStorage.Tables;
 using Common.Log;
-using Core.Domain.Accounts;
-using Core.Domain.Exchange;
-using Core.Domain.Feed;
-using Core.Domain.Market;
 using Core.Domain.Settings;
-using Core.Feed;
-using Core.Services;
 using Lykke.Common.ApiLibrary.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,21 +14,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
-using Services;
 using Swashbuckle.Swagger.Model;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
-using Lykke.MarketProfileService.Client;
+using LykkePublicAPI.Modules;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Redis;
-using Microsoft.Extensions.Options;
 
 namespace LykkePublicAPI
 {
     public class Startup
     {
+        private IConfigurationRoot Configuration { get; }
+
+        private ILog Log { get; set; }
+
+        private IContainer ApplicationContainer { get; set; }
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -52,9 +44,7 @@ namespace LykkePublicAPI
 
             Configuration = builder.Build();
         }
-
-        public IConfigurationRoot Configuration { get; }
-
+        
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             var builder = new ContainerBuilder();
@@ -63,79 +53,10 @@ namespace LykkePublicAPI
             var settings = appSettings.CurrentValue;
             var dbSettings = appSettings.Nested(x => x.PublicApi.Db);
 
+            Log = CreateLogWithSlack(services, settings, dbSettings);
+
             services.AddApplicationInsightsTelemetry(Configuration);
-
-            services.AddMemoryCache();
-
-            services.AddSingleton(settings);
-            services.AddSingleton(settings.PublicApi);
-            services.AddSingleton(settings.PublicApi.CompanyInfo);
-
-            services.UseAssetsClient(AssetServiceSettings.Create(
-                new Uri(settings.Assets.ServiceUrl), 
-                settings.PublicApi.AssetsCache.ExpirationPeriod));
-
-            var log = CreateLogWithSlack(services, settings, dbSettings);
-
-            services.AddSingleton(log);
-
-            ConfigureRateLimits(
-                settings.PublicApi.CacheSettings,
-                services,
-                settings.PublicApi.IpRateLimiting);
-
-            services.AddSingleton<IAssetPairBestPriceRepository>(
-                new AssetPairBestPriceRepository(AzureTableStorage<FeedDataEntity>.Create(
-                    dbSettings.ConnectionString(x => x.HLiquidityConnString),
-                    "MarketProfile",
-                    null)));
-
-            services.AddSingleton<ICandlesHistoryServiceProvider>(x =>
-            {
-                var provider = new CandlesHistoryServiceProvider();
-
-                provider.RegisterMarket(MarketType.Spot, settings.CandlesHistoryServiceClient.ServiceUrl);
-                provider.RegisterMarket(MarketType.Mt, settings.MtCandlesHistoryServiceClient.ServiceUrl);
-
-                return provider;
-            });
-
-            // Sets the spot candles history service as default
-            services.AddSingleton(x => x.GetService<ICandlesHistoryServiceProvider>().Get(MarketType.Spot));
-
-            services.AddSingleton<ITradesCommonRepository>(
-                new TradesCommonRepository(AzureTableStorage<TradeCommonEntity>.Create(
-                    dbSettings.ConnectionString(x => x.HTradesConnString),
-                    "TradesCommon",
-                    null)));
-            services.AddSingleton<IFeedHistoryRepository>(
-                new FeedHistoryRepository(AzureTableStorage<FeedHistoryEntity>.Create(
-                    dbSettings.ConnectionString(x => x.HLiquidityConnString),
-                    "FeedHistory",
-                    null)));
-
-            services.AddSingleton<IWalletsRepository>(
-                new WalletsRepository(AzureTableStorage<WalletEntity>.Create(
-                    dbSettings.ConnectionString(x => x.BalancesInfoConnString),
-                    "Accounts",
-                    null)));
-
-            services.AddDistributedRedisCache(options =>
-            {
-                options.Configuration = settings.PublicApi.CacheSettings.RedisConfiguration;
-                options.InstanceName = settings.PublicApi.CacheSettings.FinanceDataCacheInstance;
-            });
-
-            services.AddSingleton<ILykkeMarketProfileServiceAPI>(x => new LykkeMarketProfileServiceAPI(
-                new Uri(settings.MarketProfileServiceClient.ServiceUrl)));
-
-            services.AddTransient<IOrderBooksService, OrderBookService>();
-            services.AddTransient<IMarketCapitalizationService, MarketCapitalizationService>();
-            services.AddTransient<IMarketProfileService, MarketProfileService>();
-            services.AddTransient<ISrvRatesHelper, SrvRateHelper>();
-
             services.AddMvc();
-
             services.AddSwaggerGen();
 
             services.ConfigureSwaggerGen(options =>
@@ -157,11 +78,14 @@ namespace LykkePublicAPI
                 options.IncludeXmlComments(xmlPath);
             });
 
+            builder.RegisterModule(new ApiModule(settings, Log));
+            builder.RegisterModule(new RepositoriesModule(dbSettings));
+
             builder.Populate(services);
 
-            var applicationContainer = builder.Build();
+            ApplicationContainer = builder.Build();
 
-            return new AutofacServiceProvider(applicationContainer);
+            return new AutofacServiceProvider(ApplicationContainer);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -194,16 +118,64 @@ namespace LykkePublicAPI
 
             app.UseSwagger();
             app.UseSwaggerUi();
-            appLifetime.ApplicationStopped.Register(() => CleanUp(app.ApplicationServices));
+
+            appLifetime.ApplicationStarted.Register(() => StartApplication().GetAwaiter().GetResult());
+            appLifetime.ApplicationStopping.Register(() => StopApplication().GetAwaiter().GetResult());
+            appLifetime.ApplicationStopped.Register(() => CleanUp().GetAwaiter().GetResult());
         }
 
-        private void CleanUp(IServiceProvider services)
+        private async Task StartApplication()
         {
-            Console.WriteLine("Cleaning up...");
+            try
+            {
+                // NOTE: Job not yet recieve and process IsAlive requests here
+                await Log.WriteMonitorAsync("", "", "Started");
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
+                throw;
+            }
+        }
 
-            (services.GetService<ILog>() as IDisposable)?.Dispose();
+        private async Task StopApplication()
+        {
+            try
+            {
+                // NOTE: Job still can recieve and process IsAlive requests here, so take care about it if you add logic here.
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                {
+                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StopApplication), "", ex);
+                }
+                throw;
+            }
+        }
 
-            Console.WriteLine("Cleaned up");
+        private async Task CleanUp()
+        {
+            try
+            {
+                // NOTE: Job can't recieve and process IsAlive requests here, so you can destroy all resources
+
+                if (Log != null)
+                {
+                    await Log.WriteMonitorAsync("", "", "Terminating");
+                }
+
+                ApplicationContainer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                if (Log != null)
+                {
+                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
+                    (Log as IDisposable)?.Dispose();
+                }
+                throw;
+            }
         }
 
         private static ILog CreateLogWithSlack(IServiceCollection services, Settings settings, IReloadingManager<DbSettings> dbSettings)
@@ -246,34 +218,6 @@ namespace LykkePublicAPI
             }
 
             return aggregateLogger;
-        }
-
-        private void ConfigureRateLimits(CacheSettings settings, IServiceCollection services, RateLimitSettings.RateLimitCoreOptions rateLimitOptions)
-        {
-            services.Configure<ClientRateLimitOptions>(options =>
-            {
-                options.EnableEndpointRateLimiting = rateLimitOptions.EnableEndpointRateLimiting;
-                options.StackBlockedRequests = rateLimitOptions.StackBlockedRequests;
-                options.GeneralRules = rateLimitOptions.GeneralRules
-                    .Select(x => new RateLimitRule
-                    {
-                        Endpoint = x.Endpoint,
-                        Limit = x.Limit,
-                        Period = x.Period
-                    })
-                    .ToList();
-            });
-
-            var cache = new RedisCache(new RedisCacheOptions
-            {
-                Configuration = settings.ThrottlingRedisConfiguration,
-                InstanceName = settings.ThrottlingInstanceName
-            });
-
-            services.AddSingleton<IClientPolicyStore>(c => new DistributedCacheClientPolicyStore(
-                cache,
-                c.GetService<IOptions<ClientRateLimitOptions>>()));
-            services.AddSingleton<IRateLimitCounterStore>(c => new DistributedCacheRateLimitCounterStore(cache));
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Services
         private readonly PublicApiSettings _settings;
         private readonly ICachedAssetsService _assetsService;
 
-        public OrderBookService([KeyFilter(CacheType.FinanceData)] IDistributedCache distributedCache,
+        public OrderBookService(IDistributedCache distributedCache,
             PublicApiSettings settings,
             ICachedAssetsService assetsService)
         {

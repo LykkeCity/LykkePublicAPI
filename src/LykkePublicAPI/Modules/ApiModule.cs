@@ -2,6 +2,7 @@
 using System.Linq;
 using AspNetCoreRateLimit;
 using Autofac;
+using Autofac.Core;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Core;
@@ -45,7 +46,10 @@ namespace LykkePublicAPI.Modules
             builder.RegisterInstance(_apiSettings);
             builder.RegisterInstance(_apiSettings.CompanyInfo);
 
-            builder.RegisterType<OrderBookService>().As<IOrderBooksService>();
+            builder.RegisterType<OrderBookService>()
+                .As<IOrderBooksService>()
+                .WithParameter(ResolvedParameter.ForKeyed<IDistributedCache>(CacheType.FinanceData));
+
             builder.RegisterType< MarketCapitalizationService>().As<IMarketCapitalizationService>();
             builder.RegisterType<MarketProfileService>().As<IMarketProfileService>();
             builder.RegisterType<SrvRateHelper>().As<ISrvRatesHelper>();

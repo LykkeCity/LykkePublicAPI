@@ -112,7 +112,7 @@ namespace LykkePublicAPI
             }
 
             app.UseLykkeMiddleware("PublicAPI", ex => new { Message = "Technical problem" });
-            app.UseClientRateLimiting();
+            app.UseIpRateLimiting();
 
             app.UseMvc();
 

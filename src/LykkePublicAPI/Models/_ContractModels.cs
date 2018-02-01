@@ -12,6 +12,7 @@ using Lykke.MarketProfileService.Client.Models;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client.Models;
 using LykkePublicAPI.Extensions;
+using MessagePack;
 
 namespace LykkePublicAPI.Models
 {
@@ -58,17 +59,29 @@ namespace LykkePublicAPI.Models
         public double? TradingOppositeVolume { get; set; }
     }
 
+    [MessagePackObject]
     public class ApiMarketData
     {
+        [Key(0)]
         public string AssetPair { get; set; }
+
+        [Key(1)]
         public double Volume24H { get; set; }
+
+        [Key(2)]
         public double LastPrice { get; set; }
+
+        [Key(3)]
         public double Bid { get; set; }
+
+        [Key(4)]
         public double Ask { get; set; }
     }
 
+    [MessagePackObject]
     public class ApiMarketCapitalizationData
     {
+        [Key(0)]
         public double Amount { get; set; }
     }
 

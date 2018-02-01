@@ -42,6 +42,44 @@ namespace LykkePublicAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<ApiMarketData>> Get()
         {
+            return await _cache.TryGetFromCacheAsync(
+                "Market:Overall", 
+                async () => await GetMarketInternal(),
+                absoluteExpiration: TimeSpan.FromMinutes(30));
+        }
+
+        /// <summary>
+        /// Get trade volume for asset pair
+        /// </summary>
+        [HttpGet("{assetPair}")]
+        public async Task<ApiMarketData> Get(string assetPair)
+        {
+            return await _cache.TryGetFromCacheAsync(
+                $"Market:AssetPairs:{assetPair}", 
+                async () => await GetMarketInternal(assetPair), 
+                absoluteExpiration: TimeSpan.FromMinutes(30));
+        }
+
+        /// <summary>
+        /// Get trade volume for asset
+        /// </summary>
+        [HttpGet("capitalization/{market}")]
+        public async Task<ApiMarketCapitalizationData> GetMarketCapitalization(string market)
+        {
+            return await _cache.TryGetFromCacheAsync("Market:Capitalization", async () =>
+                {
+                    var amount = await _marketCapitalizationService.GetCapitalization(market);
+
+                    return new ApiMarketCapitalizationData
+                    {
+                        Amount = amount
+                    };
+                },
+                absoluteExpiration: TimeSpan.FromMinutes(10));
+        }
+
+        private async Task<IEnumerable<ApiMarketData>> GetMarketInternal()
+        {
             var marketProfileTask = _marketProfileRepo.GetAsync();
             var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot);
             var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt);
@@ -93,18 +131,14 @@ namespace LykkePublicAPI.Controllers
 
                     result.Add(assetCandles.Key, marketData);
                 }
-                
+
                 marketData.Volume24H += assetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
             }
 
-            return result.Values;
+            return result.Values.ToArray();
         }
 
-        /// <summary>
-        /// Get trade volume for asset pair
-        /// </summary>
-        [HttpGet("{assetPair}")]
-        public async Task<ApiMarketData> Get(string assetPair)
+        private async Task<ApiMarketData> GetMarketInternal(string assetPair)
         {
             var marketProfileTask = _marketProfileRepo.GetAsync();
             var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot, assetPair);
@@ -131,7 +165,7 @@ namespace LykkePublicAPI.Controllers
             {
                 result.LastPrice = spotCandles.History.Last().LastTradePrice;
             }
-            else if(mtCandles.History.Any())
+            else if (mtCandles.History.Any())
             {
                 result.LastPrice = mtCandles.History.Last().LastTradePrice;
             }
@@ -140,17 +174,6 @@ namespace LykkePublicAPI.Controllers
                                mtCandles.History.Sum(c => c.TradingOppositeVolume);
 
             return result;
-        }
-
-        /// <summary>
-        /// Get trade volume for asset
-        /// </summary>
-        [HttpGet("capitalization/{market}")]
-        public async Task<ApiMarketCapitalizationData> GetMarketCapitalization(string market)
-        {
-            var amount = await _marketCapitalizationService.GetCapitalization(market);
-
-            return new ApiMarketCapitalizationData {Amount = amount };
         }
 
         private async Task<CandlesHistoryResponseModel> GetLastDayCandlesAsync(MarketType market, string assetPair)

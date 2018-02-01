@@ -94,8 +94,6 @@ namespace Core.Domain.Settings
         public string FinanceDataCacheInstance { get; set; }
         public string RedisConfiguration { get; set; }
         public string OrderBooksCacheKeyPattern { get; set; }
-        public string ThrottlingRedisConfiguration { get; set; }
-        public string ThrottlingInstanceName { get; set; }
         public string CommonRedisConfiguration { get; set; }
         [Optional]
         public string CommonRedisInstanceName { get; set; }

@@ -11,6 +11,7 @@ using Core.Services;
 using Lykke.MarketProfileService.Client;
 using Lykke.Service.Assets.Client.Custom;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -88,8 +89,8 @@ namespace LykkePublicAPI.Modules
             builder
                 .Register(c => new RedisCache(new RedisCacheOptions
                 {
-                    Configuration = _apiSettings.CacheSettings.ThrottlingRedisConfiguration,
-                    InstanceName = _apiSettings.CacheSettings.ThrottlingInstanceName
+                    Configuration = _apiSettings.CacheSettings.RedisConfiguration,
+                    InstanceName = _apiSettings.CacheSettings.FinanceDataCacheInstance
                 }))
                 .Keyed<IDistributedCache>(CacheType.FinanceData)
                 .SingleInstance();
@@ -122,16 +123,8 @@ namespace LykkePublicAPI.Modules
                     .ToList();
             });
 
-            var cache = new RedisCache(new RedisCacheOptions
-            {
-                Configuration = _apiSettings.CacheSettings.ThrottlingRedisConfiguration,
-                InstanceName = $"PublicApi:{_apiSettings.CacheSettings.ThrottlingInstanceName}:"
-            });
-
-            _services.AddSingleton<IClientPolicyStore>(c => new DistributedCacheClientPolicyStore(
-                cache,
-                c.GetService<IOptions<ClientRateLimitOptions>>()));
-            _services.AddSingleton<IRateLimitCounterStore>(c => new DistributedCacheRateLimitCounterStore(cache));
+            _services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
+            _services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
         }
     }
 }

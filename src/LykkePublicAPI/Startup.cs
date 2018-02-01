@@ -78,11 +78,11 @@ namespace LykkePublicAPI
                 options.IncludeXmlComments(xmlPath);
             });
 
-            builder.RegisterModule(new ApiModule(settings, Log));
-            builder.RegisterModule(new RepositoriesModule(dbSettings));
-
             builder.Populate(services);
 
+            builder.RegisterModule(new ApiModule(settings, Log));
+            builder.RegisterModule(new RepositoriesModule(dbSettings));
+            
             ApplicationContainer = builder.Build();
 
             return new AutofacServiceProvider(ApplicationContainer);

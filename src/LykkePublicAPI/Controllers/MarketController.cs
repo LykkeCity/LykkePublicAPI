@@ -66,7 +66,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("capitalization/{market}")]
         public async Task<ApiMarketCapitalizationData> GetMarketCapitalization(string market)
         {
-            return await _cache.TryGetFromCacheAsync("Market:Capitalization", async () =>
+            return await _cache.TryGetFromCacheAsync($"Market:Capitalization:{market}", async () =>
                 {
                     var amount = await _marketCapitalizationService.GetCapitalization(market);
 

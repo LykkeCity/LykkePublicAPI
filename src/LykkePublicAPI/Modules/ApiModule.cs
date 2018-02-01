@@ -109,7 +109,7 @@ namespace LykkePublicAPI.Modules
 
         private void ConfigureRateLimits()
         {
-            _services.Configure<ClientRateLimitOptions>(options =>
+            _services.Configure<IpRateLimitOptions>(options =>
             {
                 options.EnableEndpointRateLimiting = _apiSettings.IpRateLimiting.EnableEndpointRateLimiting;
                 options.StackBlockedRequests = _apiSettings.IpRateLimiting.StackBlockedRequests;
@@ -123,7 +123,7 @@ namespace LykkePublicAPI.Modules
                     .ToList();
             });
 
-            _services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
+            _services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             _services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
         }
     }

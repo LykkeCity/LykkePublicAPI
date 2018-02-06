@@ -48,10 +48,36 @@ namespace LykkePublicAPI.Modules
             builder.RegisterType<OrderBookService>()
                 .As<IOrderBooksService>()
                 .WithParameter(ResolvedParameter.ForKeyed<IDistributedCache>(CacheType.FinanceData));
-
-            builder.RegisterType< MarketCapitalizationService>().As<IMarketCapitalizationService>();
-            builder.RegisterType<MarketProfileService>().As<IMarketProfileService>();
             builder.RegisterType<SrvRateHelper>().As<ISrvRatesHelper>();
+
+            // Services that should be decorated
+
+            builder.RegisterType<MarketCapitalizationService>().Named<IMarketCapitalizationService>("default");
+            builder.RegisterType<MarketProfileService>().Named<IMarketProfileService>("default");
+            builder.RegisterType<MarketTradingDataService>().Named<IMarketTradingDataService>("default");
+
+            // Cached decorators
+
+            builder.RegisterDecorator<IMarketCapitalizationService>(
+                (c, inner) => new CachedMarketCapitalizationService(
+                    c.Resolve<IDistributedCache>(),
+                    inner,
+                    _settings.PublicApi.CacheSettings.MarketCapitalizationExpirationPeriod),
+                fromKey: "default");
+
+            builder.RegisterDecorator<IMarketProfileService>(
+                (c, inner) => new CachedMarketProfileService(
+                    c.Resolve<IDistributedCache>(),
+                    inner,
+                    _settings.PublicApi.CacheSettings.MarketProfileExpirationPeriod),
+                fromKey: "default");
+
+            builder.RegisterDecorator<IMarketTradingDataService>(
+                (c, inner) => new CachedMarketTradingDataService(
+                    c.Resolve<IDistributedCache>(),
+                    inner,
+                    _settings.PublicApi.CacheSettings.MarketTradingDataExpirationPeriod),
+                fromKey: "default");
 
             RegisterServiceClients(builder);
             RegisterRedisCache(builder);

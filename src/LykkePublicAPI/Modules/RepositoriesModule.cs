@@ -6,7 +6,6 @@ using AzureStorage.Tables;
 using Common.Log;
 using Core.Domain.Accounts;
 using Core.Domain.Exchange;
-using Core.Domain.Feed;
 using Core.Domain.Settings;
 using Core.Feed;
 using Lykke.SettingsReader;
@@ -24,12 +23,6 @@ namespace LykkePublicAPI.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(c => new AssetPairBestPriceRepository(AzureTableStorage<FeedDataEntity>.Create(
-                    _dbSettings.ConnectionString(x => x.HLiquidityConnString),
-                    "MarketProfile",
-                    c.Resolve<ILog>())))
-                .As<IAssetPairBestPriceRepository>();
-
             builder.Register(c => new TradesCommonRepository(AzureTableStorage<TradeCommonEntity>.Create(
                     _dbSettings.ConnectionString(x => x.HTradesConnString),
                     "TradesCommon",

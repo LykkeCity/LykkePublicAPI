@@ -4,14 +4,12 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Core.Domain.Exchange;
-using Core.Domain.Feed;
 using Core.Feed;
 using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.MarketProfileService.Client.Models;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client.Models;
-using LykkePublicAPI.Extensions;
 using MessagePack;
 
 namespace LykkePublicAPI.Models

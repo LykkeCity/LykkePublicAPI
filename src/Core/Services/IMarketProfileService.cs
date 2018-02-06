@@ -7,6 +7,6 @@ namespace Core.Services
     public interface IMarketProfileService
     {
         Task<AssetPairModel> TryGetPairAsync(string assetPairId);
-        Task<IList<AssetPairModel>> GetAllPairsAsync();
+        Task<IEnumerable<AssetPairModel>> GetAllPairsAsync();
     }
 }

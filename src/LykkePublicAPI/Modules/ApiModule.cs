@@ -11,11 +11,10 @@ using Core.Domain.Settings;
 using Core.Services;
 using Lykke.MarketProfileService.Client;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Registration;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Services;
 
 namespace LykkePublicAPI.Modules
@@ -86,6 +85,8 @@ namespace LykkePublicAPI.Modules
                 .As<ILykkeMarketProfileServiceAPI>()
                 .WithParameter(TypedParameter.From(new Uri(_settings.MarketProfileServiceClient.ServiceUrl)))
                 .SingleInstance();
+            
+            builder.RegisterRegistrationClient(_settings.RegistrationServiceClient.ServiceUrl, _log);
         }
 
         private void RegisterRedisCache(ContainerBuilder builder)

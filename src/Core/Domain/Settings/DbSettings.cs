@@ -55,15 +55,15 @@ namespace Core.Domain.Settings
 
     public class MarketProfileServiceClientSettings
     {
-        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
     
     public class RegistrationServiceClientSettings
     {
+        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
-
+    
     public class AssetsSettings
     {
         [HttpCheck("/api/isalive")]

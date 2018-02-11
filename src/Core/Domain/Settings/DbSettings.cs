@@ -55,6 +55,7 @@ namespace Core.Domain.Settings
 
     public class MarketProfileServiceClientSettings
     {
+        [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
     

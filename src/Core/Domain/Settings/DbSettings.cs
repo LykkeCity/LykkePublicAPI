@@ -104,6 +104,10 @@ namespace Core.Domain.Settings
         public string CommonRedisConfiguration { get; set; }
         [Optional]
         public string CommonRedisInstanceName { get; set; }
+
+        public TimeSpan MarketCapitalizationExpirationPeriod { get; set; }
+        public TimeSpan MarketProfileExpirationPeriod { get; set; }
+        public TimeSpan MarketTradingDataExpirationPeriod { get; set; }
     }
 
     public static class CacheSettingsExt

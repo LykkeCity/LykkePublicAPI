@@ -1,38 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Domain.Feed;
 using Core.Services;
-using Lykke.Service.CandlesHistory.Client;
-using Lykke.Service.CandlesHistory.Client.Models;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Polly;
-using Services;
-using MarketType = Core.Domain.Market.MarketType;
 
 namespace LykkePublicAPI.Controllers
 {
     [Route("api/[controller]")]
     public class MarketController : Controller
     {
-        private readonly IDistributedCache _cache;
-        private readonly IAssetPairBestPriceRepository _marketProfileRepo;
+        private readonly IMarketProfileService _marketProfileService;
         private readonly IMarketCapitalizationService _marketCapitalizationService;
-        private readonly ICandlesHistoryServiceProvider _candlesHistoryServiceProvider;
+        private readonly IMarketTradingDataService _marketTradingDataService;
 
         public MarketController(
-            IDistributedCache cache,
-            IAssetPairBestPriceRepository marketProfileRepo,
+            IMarketProfileService marketProfileService,
             IMarketCapitalizationService marketCapitalizationService,
-            ICandlesHistoryServiceProvider candlesHistoryServiceProvider)
+            IMarketTradingDataService marketTradingDataService)
         {
-            _cache = cache;
-            _marketProfileRepo = marketProfileRepo;
+            _marketProfileService = marketProfileService;
             _marketCapitalizationService = marketCapitalizationService;
-            _candlesHistoryServiceProvider = candlesHistoryServiceProvider;
+            _marketTradingDataService = marketTradingDataService;
         }
 
         /// <summary>
@@ -42,10 +30,47 @@ namespace LykkePublicAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<ApiMarketData>> Get()
         {
-            return await _cache.TryGetFromCacheAsync(
-                "Market:Overall", 
-                async () => await GetMarketInternal(),
-                absoluteExpiration: TimeSpan.FromMinutes(30));
+            var marketProfileTask = _marketProfileService.GetAllPairsAsync();
+            var tradingDataTask = _marketTradingDataService.GetAllPairsAsync();
+
+            var marketProfile = await marketProfileTask;
+            var tradingData = await tradingDataTask;
+
+            var result = new Dictionary<string, ApiMarketData>();
+
+            if (marketProfile != null)
+            {
+                foreach (var assetProfile in marketProfile)
+                {
+                    result[assetProfile.AssetPair] = new ApiMarketData
+                    {
+                        AssetPair = assetProfile.AssetPair,
+                        Ask = assetProfile.AskPrice,
+                        Bid = assetProfile.BidPrice
+                    };
+                }
+            }
+
+            if (tradingData != null)
+            {
+                foreach (var assetTradingData in tradingData)
+                {
+                    if (!result.TryGetValue(assetTradingData.AssetPair, out var marketData))
+                    {
+                        marketData = new ApiMarketData
+                        {
+                            AssetPair = assetTradingData.AssetPair
+                        };
+
+                        result.Add(assetTradingData.AssetPair, marketData);
+                    }
+
+                    marketData.LastPrice = assetTradingData.LastTradePrice;
+                    marketData.Volume24H = assetTradingData.Volume24;
+                }
+            }
+
+            return result.Values;
         }
 
         /// <summary>
@@ -54,10 +79,31 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("{assetPair}")]
         public async Task<ApiMarketData> Get(string assetPair)
         {
-            return await _cache.TryGetFromCacheAsync(
-                $"Market:AssetPairs:{assetPair}", 
-                async () => await GetMarketInternal(assetPair), 
-                absoluteExpiration: TimeSpan.FromMinutes(30));
+            var marketProfileTask = _marketProfileService.TryGetPairAsync(assetPair);
+            var tradingDataTask = _marketTradingDataService.TryGetPairAsync(assetPair);
+
+            var marketProfile = await marketProfileTask;
+            var tradingData = await tradingDataTask;
+
+            var result = new ApiMarketData
+            {
+                AssetPair = assetPair
+            };
+
+            if (marketProfile != null)
+            {
+                result.Ask = marketProfile.AskPrice;
+                result.Bid = marketProfile.BidPrice;
+            }
+
+            if (tradingData != null)
+            {
+                result.LastPrice = tradingData.LastTradePrice;
+                result.Volume24H = tradingData.Volume24;
+            }
+
+            return result;
+
         }
 
         /// <summary>
@@ -66,176 +112,12 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("capitalization/{market}")]
         public async Task<ApiMarketCapitalizationData> GetMarketCapitalization(string market)
         {
-            return await _cache.TryGetFromCacheAsync($"Market:Capitalization:{market}", async () =>
-                {
-                    var amount = await _marketCapitalizationService.GetCapitalization(market);
+            var amount = await _marketCapitalizationService.GetCapitalization(market);
 
-                    return new ApiMarketCapitalizationData
-                    {
-                        Amount = amount
-                    };
-                },
-                absoluteExpiration: TimeSpan.FromMinutes(10));
-        }
-
-        private async Task<IEnumerable<ApiMarketData>> GetMarketInternal()
-        {
-            var marketProfileTask = _marketProfileRepo.GetAsync();
-            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot);
-            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt);
-
-            var marketProfile = await marketProfileTask;
-            var spotCandles = await spotCandlesTask;
-            var mtCandles = await mtCandlesTask;
-
-            var result = new Dictionary<string, ApiMarketData>();
-
-            if (marketProfile?.Profile != null)
+            return new ApiMarketCapitalizationData
             {
-                foreach (var assetProfile in marketProfile.Profile)
-                {
-                    result[assetProfile.Asset] = new ApiMarketData
-                    {
-                        AssetPair = assetProfile.Asset,
-                        Ask = assetProfile.Ask,
-                        Bid = assetProfile.Bid
-                    };
-                }
-            }
-
-            foreach (var assetCandles in spotCandles)
-            {
-                if (!result.TryGetValue(assetCandles.Key, out var marketData))
-                {
-                    marketData = new ApiMarketData
-                    {
-                        AssetPair = assetCandles.Key
-                    };
-
-                    result.Add(assetCandles.Key, marketData);
-                }
-
-                marketData.LastPrice = assetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0;
-                marketData.Volume24H = assetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
-            }
-
-            foreach (var assetCandles in mtCandles)
-            {
-                if (!result.TryGetValue(assetCandles.Key, out var marketData))
-                {
-                    marketData = new ApiMarketData
-                    {
-                        AssetPair = assetCandles.Key,
-                        LastPrice = assetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0
-                    };
-
-                    result.Add(assetCandles.Key, marketData);
-                }
-
-                marketData.Volume24H += assetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
-            }
-
-            return result.Values.ToArray();
-        }
-
-        private async Task<ApiMarketData> GetMarketInternal(string assetPair)
-        {
-            var marketProfileTask = _marketProfileRepo.GetAsync();
-            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot, assetPair);
-            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt, assetPair);
-
-            var marketProfile = await marketProfileTask;
-            var spotCandles = await spotCandlesTask;
-            var mtCandles = await mtCandlesTask;
-
-            var result = new ApiMarketData
-            {
-                AssetPair = assetPair
+                Amount = amount ?? 0
             };
-
-            if (marketProfile?.Profile != null)
-            {
-                var assetProfile = marketProfile.Profile.FirstOrDefault(x => x.Asset == assetPair);
-
-                result.Ask = assetProfile?.Ask ?? 0;
-                result.Bid = assetProfile?.Bid ?? 0;
-            }
-
-            if (spotCandles.History.Any())
-            {
-                result.LastPrice = spotCandles.History.Last().LastTradePrice;
-            }
-            else if (mtCandles.History.Any())
-            {
-                result.LastPrice = mtCandles.History.Last().LastTradePrice;
-            }
-
-            result.Volume24H = spotCandles.History.Sum(c => c.TradingOppositeVolume) +
-                               mtCandles.History.Sum(c => c.TradingOppositeVolume);
-
-            return result;
-        }
-
-        private async Task<CandlesHistoryResponseModel> GetLastDayCandlesAsync(MarketType market, string assetPair)
-        {
-            var assetPairs = await GetAvailableAssetPairsAsync(market);
-            var candlesService = _candlesHistoryServiceProvider.Get(market);
-            var to = DateTime.UtcNow; // exclusive
-            var from = to - TimeSpan.FromHours(25); // inclusive
-
-            if (!assetPairs.Contains(assetPair))
-            {
-                return new CandlesHistoryResponseModel
-                {
-                    History = new List<Candle>()
-                };
-            }
-
-            var candles = await candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
-
-            return candles;
-        }
-
-        private async Task<IReadOnlyDictionary<string, CandlesHistoryResponseModel>> GetLastDayCandlesAsync(MarketType market)
-        {
-            var assetPairs = await GetAvailableAssetPairsAsync(market);
-            var candlesService = _candlesHistoryServiceProvider.Get(market);
-            var to = DateTime.UtcNow; // exclusive
-            var from = to - TimeSpan.FromHours(25); // inclusive
-
-            var candles = await candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
-
-            return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
-        }
-
-        private Task<IList<string>> GetAvailableAssetPairsAsync(MarketType market)
-        {
-            return Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(new[]
-                {
-                    TimeSpan.FromMilliseconds(50),
-                    TimeSpan.FromMilliseconds(100),
-                    TimeSpan.FromMilliseconds(500)
-                })
-                .ExecuteAsync(() =>
-                    _cache.TryGetFromCacheAsync(
-                        $"CandlesHistory:{market}:AvailableAssetPairs",
-                        () =>
-                        {
-                            var candlesService = _candlesHistoryServiceProvider.Get(market);
-
-                            return Policy
-                                .Handle<Exception>()
-                                .WaitAndRetryAsync(new[]
-                                    {
-                                        TimeSpan.FromMilliseconds(100),
-                                        TimeSpan.FromSeconds(1),
-                                        TimeSpan.FromSeconds(10)
-                                    })
-                                .ExecuteAsync(() => candlesService.GetAvailableAssetPairsAsync());
-                        },
-                        absoluteExpiration: TimeSpan.FromHours(1)));
         }
     }
 }

@@ -4,6 +4,6 @@ namespace Core.Services
 {
     public interface IMarketCapitalizationService
     {
-        Task<double> GetCapitalization(string market);
+        Task<double?> GetCapitalization(string market);
     }
 }

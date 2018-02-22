@@ -32,7 +32,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("ownershipStructure")]
         public async Task<CompanyInfoModels> GetOwnershipStructure()
         {
-            var tradingWalletCoins = await _marketCapitalizationService.GetCapitalization(LykkeConstants.LykkeAssetId);
+            var tradingWalletCoins = await _marketCapitalizationService.GetCapitalization(LykkeConstants.LykkeAssetId) ?? 0;
             var privateWalletCoins = _companyInfo.LkkTotalAmount - tradingWalletCoins -
                                      _companyInfo.LkkCompanyTreasuryAmount;
 

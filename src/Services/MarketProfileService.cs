@@ -20,7 +20,7 @@ namespace Services
             return await _api.TryGetAssetPairAsync(assetPairId);
         }
 
-        public async Task<IList<AssetPairModel>> GetAllPairsAsync()
+        public async Task<IEnumerable<AssetPairModel>> GetAllPairsAsync()
         {
             return await _api.ApiMarketProfileGetAsync();
         }

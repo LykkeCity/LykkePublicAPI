@@ -2,7 +2,6 @@
 using Core;
 using Core.Domain.Settings;
 using Core.Services;
-using Lykke.Service.Registration;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,17 +12,17 @@ namespace LykkePublicAPI.Controllers
     {
         private readonly LykkeCompanyData _companyInfo;
         private readonly IMarketCapitalizationService _marketCapitalizationService;
-        private readonly ILykkeRegistrationClient _registrationClient;
+        private readonly IRegistrationsInfoCacheService _registrationsInfoCacheService;
 
         public CompanyController(
             LykkeCompanyData companyInfo,
             IMarketCapitalizationService marketCapitalizationService,
-            ILykkeRegistrationClient registrationClient
+            IRegistrationsInfoCacheService registrationsInfoCacheService
             )
         {
             _companyInfo = companyInfo;
             _marketCapitalizationService = marketCapitalizationService;
-            _registrationClient = registrationClient;
+            _registrationsInfoCacheService = registrationsInfoCacheService;
         }
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace LykkePublicAPI.Controllers
         {
             return new RegistrationsCountModel
             {
-                Count = await _registrationClient.GetRegistrationsCountAsync()
+                Count = await _registrationsInfoCacheService.GetRegistrationsCountAsync()
             };
         }
     }

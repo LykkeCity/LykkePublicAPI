@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Services</AssemblyName>
@@ -8,12 +7,11 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
-
   <ItemGroup>
+    <PackageReference Include="Lykke.Service.Registration" Version="1.1.1" />
     <PackageReference Include="MessagePack" Version="1.7.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" />
@@ -24,5 +22,4 @@
     <PackageReference Include="protobuf-net" Version="2.3.2" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
   </ItemGroup>
-
 </Project>

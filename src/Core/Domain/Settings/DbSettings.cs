@@ -108,6 +108,7 @@ namespace Core.Domain.Settings
         public TimeSpan MarketCapitalizationExpirationPeriod { get; set; }
         public TimeSpan MarketProfileExpirationPeriod { get; set; }
         public TimeSpan MarketTradingDataExpirationPeriod { get; set; }
+        public TimeSpan RegistrationsInfoExpirationPeriod { get; set; }
     }
 
     public static class CacheSettingsExt

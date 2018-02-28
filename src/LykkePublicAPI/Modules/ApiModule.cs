@@ -79,6 +79,11 @@ namespace LykkePublicAPI.Modules
                     _settings.PublicApi.CacheSettings.MarketTradingDataExpirationPeriod),
                 fromKey: "default");
 
+            builder.RegisterType<RegistrationsInfoCacheService>()
+                .As<IRegistrationsInfoCacheService>()
+                .WithParameter(TypedParameter.From(_settings.PublicApi.CacheSettings.RegistrationsInfoExpirationPeriod))
+                .SingleInstance();
+
             RegisterServiceClients(builder);
             RegisterRedisCache(builder);
             ConfigureRateLimits();

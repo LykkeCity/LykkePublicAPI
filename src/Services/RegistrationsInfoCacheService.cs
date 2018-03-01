@@ -22,7 +22,7 @@ namespace Services
         {
             _cache = cache;
             _registrationClient = registrationClient;
-            _cacheOptions = new DistributedCacheEntryOptions {SlidingExpiration = cacheExpirationPeriod};
+            _cacheOptions = new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = cacheExpirationPeriod};
         }
         
         public async Task<long> GetRegistrationsCountAsync()

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Core.Services;
 using Lykke.Service.Registration;
-using MessagePack;
 using Microsoft.Extensions.Caching.Distributed;
+using Services.CacheModels;
 
 namespace Services
 {
@@ -12,9 +11,8 @@ namespace Services
     {
         private readonly IDistributedCache _cache;
         private readonly ILykkeRegistrationClient _registrationClient;
-        private readonly DistributedCacheEntryOptions _cacheOptions;
+        private readonly TimeSpan _cacheExpirationPeriod;
         private const string RegistrationsInfoPrefix = "RegistrationsInfo";
-        private readonly SemaphoreSlim _lockSlim = new SemaphoreSlim(1, 1);
 
         public RegistrationsInfoCacheService(
             IDistributedCache cache,
@@ -24,28 +22,21 @@ namespace Services
         {
             _cache = cache;
             _registrationClient = registrationClient;
-            _cacheOptions = new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = cacheExpirationPeriod};
+            _cacheExpirationPeriod = cacheExpirationPeriod;
         }
         
         public async Task<long> GetRegistrationsCountAsync()
         {
-            await _lockSlim.WaitAsync();
-            
-            try
-            {
-                var value = await _cache.GetAsync(GetRegistrationsCountKey());
+            var cachedValue = await _cache.TryGetFromCacheAsync(
+                GetRegistrationsCountKey(),
+                async () =>
+                {
+                    var count = await _registrationClient.GetRegistrationsCountAsync();
+                    return new CachedRegisteredCount(count);
+                },
+                _cacheExpirationPeriod);
 
-                if (value != null) 
-                    return MessagePackSerializer.Deserialize<long>(value);
-                
-                var count = await _registrationClient.GetRegistrationsCountAsync();
-                await _cache.SetAsync(GetRegistrationsCountKey(), MessagePackSerializer.Serialize(count), _cacheOptions);
-                return count;
-            }
-            finally
-            {
-                _lockSlim.Release();
-            }
+            return cachedValue.Count;
         }
 
         private static string GetRegistrationsCountKey() => $"{RegistrationsInfoPrefix}:RegistrationsCount";

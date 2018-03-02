@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Core.Services;
 using Lykke.Service.Registration;
@@ -13,6 +14,7 @@ namespace Services
         private readonly ILykkeRegistrationClient _registrationClient;
         private readonly DistributedCacheEntryOptions _cacheOptions;
         private const string RegistrationsInfoPrefix = "RegistrationsInfo";
+        private readonly SemaphoreSlim _lockSlim = new SemaphoreSlim(1, 1);
 
         public RegistrationsInfoCacheService(
             IDistributedCache cache,
@@ -27,16 +29,23 @@ namespace Services
         
         public async Task<long> GetRegistrationsCountAsync()
         {
-            var value = await _cache.GetAsync(GetRegistrationsCountKey());
+            await _lockSlim.WaitAsync();
             
-            if (value == null)
+            try
             {
+                var value = await _cache.GetAsync(GetRegistrationsCountKey());
+
+                if (value != null) 
+                    return MessagePackSerializer.Deserialize<long>(value);
+                
                 var count = await _registrationClient.GetRegistrationsCountAsync();
                 await _cache.SetAsync(GetRegistrationsCountKey(), MessagePackSerializer.Serialize(count), _cacheOptions);
                 return count;
             }
-
-            return MessagePackSerializer.Deserialize<long>(value);
+            finally
+            {
+                _lockSlim.Release();
+            }
         }
 
         private static string GetRegistrationsCountKey() => $"{RegistrationsInfoPrefix}:RegistrationsCount";

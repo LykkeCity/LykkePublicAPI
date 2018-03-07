@@ -12,6 +12,9 @@ namespace LykkePublicAPI.Controllers
     [Route("api/[controller]")]
     public class TradesController : Controller
     {
+        private const string InvalidSkipMessage = "Invalid skip value provided";
+        private const string InvalidTakeMessage = "Invalid take value provided";
+        
         private const int MaxTrades = 500;
         private readonly ITradesCommonRepository _tradesCommonRepository;
         private readonly ITradesAdapterClient _tradesAdapterClient;
@@ -61,10 +64,28 @@ namespace LykkePublicAPI.Controllers
         /// <returns></returns>
         [HttpGet("{assetPairId}")]
         public async Task<IActionResult> GetTrades(string assetPairId,
-            [FromQuery] int skip,
-            [FromQuery] int take)
+            [FromQuery] int? skip,
+            [FromQuery] int? take)
         {
-            var trades = await _tradesAdapterClient.GetTradesByAssetPairIdAsync(assetPairId, skip, take);
+            if (skip == null || skip < 0)
+            {
+                return BadRequest(new ApiError
+                {
+                    Code = ErrorCodes.InvalidInput,
+                    Msg = InvalidSkipMessage
+                });
+            }
+
+            if (take == null || take <= 0)
+            {
+                return BadRequest(new ApiError
+                {
+                    Code = ErrorCodes.InvalidInput,
+                    Msg = InvalidTakeMessage
+                });
+            }
+            
+            var trades = await _tradesAdapterClient.GetTradesByAssetPairIdAsync(assetPairId, skip.Value, take.Value);
 
             if (trades.Error != null)
             {

@@ -12,6 +12,7 @@ using Core.Services;
 using Lykke.MarketProfileService.Client;
 using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.Registration;
+using Lykke.Service.TradesAdapter.Client;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +96,8 @@ namespace LykkePublicAPI.Modules
         {
             _services.UseAssetsClient(AssetServiceSettings.Create(new Uri(_settings.Assets.ServiceUrl),
                 _apiSettings.AssetsCache.ExpirationPeriod));
+            
+            builder.RegisterTradesAdapterClient(_settings.TradesAdapterServiceClient, _log);
 
             builder.Register(c =>
                 {

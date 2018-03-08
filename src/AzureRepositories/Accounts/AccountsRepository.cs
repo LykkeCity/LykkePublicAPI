@@ -130,10 +130,8 @@ namespace AzureRepositories.Accounts
                 entity =>
                 {
                     entity.UpdateBalance(assetId, balance);
-                    return entity;
-                }
-
-                );
+                    return true;
+                });
         }
 
         public async Task<Dictionary<string, double>> GetTotalBalancesAsync()

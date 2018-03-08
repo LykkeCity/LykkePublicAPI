@@ -87,7 +87,7 @@ namespace Services
             var to = DateTime.UtcNow; // exclusive
             var from = to - TimeSpan.FromHours(25); // inclusive
 
-            var candles = await candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
+            var candles = await candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Trades, CandleTimeInterval.Hour, from, to);
 
             return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
         }
@@ -107,7 +107,7 @@ namespace Services
                 };
             }
 
-            var candles = await candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Ask, CandleTimeInterval.Hour, from, to);
+            var candles = await candlesService.TryGetCandlesHistoryAsync(assetPair, CandlePriceType.Trades, CandleTimeInterval.Hour, from, to);
 
             return candles;
         }

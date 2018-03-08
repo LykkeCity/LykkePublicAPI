@@ -185,15 +185,15 @@ namespace LykkePublicAPI.Models
             return assetPairs.Select(x => x.ToApiModel());
         }
 
-        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, Candle buyCandle, Candle sellCandle)
+        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, Candle buyCandle, Candle sellCandle, Candle tradeCandle)
         {
             return new ApiAssetPairHistoryRateModel
             {
                 Id = assetPairId,
                 Ask = sellCandle?.Close,
                 Bid = buyCandle?.Close,
-                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume,
-                TradingOppositeVolume = buyCandle?.TradingOppositeVolume ?? sellCandle?.TradingOppositeVolume
+                TradingVolume = tradeCandle?.TradingVolume,
+                TradingOppositeVolume = tradeCandle?.TradingOppositeVolume
             };
         }
 

@@ -27,8 +27,8 @@ namespace Services
             var spotCandles = await spotCandlesTask;
             var mtCandles = await mtCandlesTask;
 
-            var lastTradePrice = spotCandles.History.LastOrDefault()?.LastTradePrice
-                            ?? mtCandles.History.LastOrDefault()?.LastTradePrice
+            var lastTradePrice = spotCandles.History.LastOrDefault()?.Close
+                            ?? mtCandles.History.LastOrDefault()?.Close
                             ?? 0;
 
             var volume24H = spotCandles.History.Sum(c => c.TradingOppositeVolume) +
@@ -58,7 +58,7 @@ namespace Services
 
                 var assetPairData = new AssetPairTradingData(
                     spotAssetCandles.Key,
-                    spotAssetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0,
+                    spotAssetCandles.Value.History.LastOrDefault()?.Close ?? 0,
                     volume24);
 
                 result.Add(assetPairData.AssetPair, assetPairData);
@@ -70,7 +70,7 @@ namespace Services
                 {
                     var assetPairData = new AssetPairTradingData(
                         mtAssetCandles.Key,
-                        mtAssetCandles.Value.History.LastOrDefault()?.LastTradePrice ?? 0,
+                        mtAssetCandles.Value.History.LastOrDefault()?.Close ?? 0,
                         mtAssetCandles.Value.History.Sum(c => c.TradingOppositeVolume));
 
                     result.Add(assetPairData.AssetPair, assetPairData);

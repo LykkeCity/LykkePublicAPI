@@ -31,10 +31,12 @@ namespace LykkePublicAPI.Controllers
         public async Task<IEnumerable<ApiMarketData>> Get()
         {
             var marketProfileTask = _marketProfileService.GetAllPairsAsync();
-            var tradingDataTask = _marketTradingDataService.GetAllPairsAsync();
+            var tradingDataVolumesTask = _marketTradingDataService.TryGetAllPairsVolumeAsync();
+            var tradingDataLastTradePricesTask = _marketTradingDataService.TryGetAllPairsLastTradePriceAsync();
 
             var marketProfile = await marketProfileTask;
-            var tradingData = await tradingDataTask;
+            var tradingDataVolumes = await tradingDataVolumesTask;
+            var tradingDataLastTradePrices = await tradingDataLastTradePricesTask;
 
             var result = new Dictionary<string, ApiMarketData>();
 
@@ -51,22 +53,39 @@ namespace LykkePublicAPI.Controllers
                 }
             }
 
-            if (tradingData != null)
+            if (tradingDataVolumes != null)
             {
-                foreach (var assetTradingData in tradingData)
+                foreach (var assetTradingDataVolume in tradingDataVolumes)
                 {
-                    if (!result.TryGetValue(assetTradingData.AssetPair, out var marketData))
+                    if (!result.TryGetValue(assetTradingDataVolume.AssetPair, out var marketData))
                     {
                         marketData = new ApiMarketData
                         {
-                            AssetPair = assetTradingData.AssetPair
+                            AssetPair = assetTradingDataVolume.AssetPair
                         };
 
-                        result.Add(assetTradingData.AssetPair, marketData);
+                        result.Add(assetTradingDataVolume.AssetPair, marketData);
                     }
 
-                    marketData.LastPrice = assetTradingData.LastTradePrice;
-                    marketData.Volume24H = assetTradingData.Volume24;
+                    marketData.Volume24H = assetTradingDataVolume.Parameter;
+                }
+            }
+
+            if (tradingDataLastTradePrices != null)
+            {
+                foreach (var tradingDataLastTradePrice in tradingDataLastTradePrices)
+                {
+                    if (!result.TryGetValue(tradingDataLastTradePrice.AssetPair, out var marketData))
+                    {
+                        marketData = new ApiMarketData
+                        {
+                            AssetPair = tradingDataLastTradePrice.AssetPair
+                        };
+
+                        result.Add(tradingDataLastTradePrice.AssetPair, marketData);
+                    }
+
+                    marketData.LastPrice = tradingDataLastTradePrice.Parameter;
                 }
             }
 
@@ -80,10 +99,12 @@ namespace LykkePublicAPI.Controllers
         public async Task<ApiMarketData> Get(string assetPair)
         {
             var marketProfileTask = _marketProfileService.TryGetPairAsync(assetPair);
-            var tradingDataTask = _marketTradingDataService.TryGetPairAsync(assetPair);
+            var tradingDataVolumeTask = _marketTradingDataService.TryGetPairVolumeAsync(assetPair);
+            var tradingDataLastTradePriceTask = _marketTradingDataService.TryGetPairLastTradePriceAsync(assetPair);
 
             var marketProfile = await marketProfileTask;
-            var tradingData = await tradingDataTask;
+            var tradingDataVolume = await tradingDataVolumeTask;
+            var tradingDataLastTradePrice = await tradingDataLastTradePriceTask;
 
             var result = new ApiMarketData
             {
@@ -96,14 +117,13 @@ namespace LykkePublicAPI.Controllers
                 result.Bid = marketProfile.BidPrice;
             }
 
-            if (tradingData != null)
-            {
-                result.LastPrice = tradingData.LastTradePrice;
-                result.Volume24H = tradingData.Volume24;
-            }
+            if (tradingDataVolume != null)
+                result.Volume24H = tradingDataVolume.Parameter;
+
+            if (tradingDataLastTradePrice != null)
+                result.LastPrice = tradingDataLastTradePrice.Parameter;
 
             return result;
-
         }
 
         /// <summary>

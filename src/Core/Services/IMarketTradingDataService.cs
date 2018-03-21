@@ -6,7 +6,9 @@ namespace Core.Services
 {
     public interface IMarketTradingDataService
     {
-        Task<AssetPairTradingData> TryGetPairAsync(string assetPair);
-        Task<IEnumerable<AssetPairTradingData>> GetAllPairsAsync();
+        Task<AssetPairTradingDataItem<double>> TryGetPairVolumeAsync(string assetPair);
+        Task<AssetPairTradingDataItem<double>> TryGetPairLastTradePriceAsync(string assetPair);
+        Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsVolumeAsync();
+        Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsLastTradePriceAsync();
     }
 }

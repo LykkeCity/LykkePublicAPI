@@ -11,48 +11,86 @@ namespace Services
 {
     public class CachedMarketTradingDataService : IMarketTradingDataService
     {
-        private readonly IDistributedCache _cache;
+        private readonly IDistributedCache _cacheVolume;
+        private readonly IDistributedCache _cacheLastTradePrice;
         private readonly IMarketTradingDataService _impl;
-        private readonly TimeSpan _cacheExpirationPeriod;
+        private readonly TimeSpan _cacheVolumeExpirationPeriod;
+        private readonly TimeSpan _cacheLastTradePriceExpirationPeriod;
 
         public CachedMarketTradingDataService(
-            IDistributedCache cache,
+            IDistributedCache cacheVolume,
+            IDistributedCache cacheLastTradePrice,
             IMarketTradingDataService impl,
-            TimeSpan cacheExpirationPeriod)
+            TimeSpan cacheVolumeExpirationPeriod,
+            TimeSpan cacheLastTradePriceExpirationPeriod)
         {
-            _cache = cache;
+            _cacheVolume = cacheVolume;
+            _cacheLastTradePrice = cacheLastTradePrice;
             _impl = impl;
-            _cacheExpirationPeriod = cacheExpirationPeriod;
+            _cacheVolumeExpirationPeriod = cacheVolumeExpirationPeriod;
+            _cacheLastTradePriceExpirationPeriod = cacheLastTradePriceExpirationPeriod;
         }
 
-        public async Task<AssetPairTradingData> TryGetPairAsync(string assetPair)
+        public async Task<AssetPairTradingDataItem<double>> TryGetPairVolumeAsync(string assetPair)
         {
-            var cachedItem = await _cache.TryGetFromCacheAsync(
-                $"Market:TradingData:AssetPairs:{assetPair}",
+            var cachedItem = await _cacheVolume.TryGetFromCacheAsync(
+                $"Market:TradingData:Volume:AssetPairs:{assetPair}",
                 async () =>
                 {
-                    var item = await _impl.TryGetPairAsync(assetPair);
+                    var item = await _impl.TryGetPairVolumeAsync(assetPair);
 
-                    return item != null ? new CachedTradingDataAssetPair(item) : null;
+                    return item != null ? new CachedTradingDataItemAssetPair<double>(item) : null;
                 },
-                absoluteExpiration: _cacheExpirationPeriod);
+                absoluteExpiration: _cacheVolumeExpirationPeriod);
 
             return cachedItem?.ToModel(assetPair);
         }
 
-        public async Task<IEnumerable<AssetPairTradingData>> GetAllPairsAsync()
+        public async Task<AssetPairTradingDataItem<double>> TryGetPairLastTradePriceAsync(string assetPair)
         {
-            var cachedItems = await _cache.TryGetFromCacheAsync(
-                "Market:TradingData:AllPairs",
+            var cachedItem = await _cacheLastTradePrice.TryGetFromCacheAsync(
+                $"Market:TradingData:LastTradePrice:AssetPairs:{assetPair}",
                 async () =>
                 {
-                    var items = await _impl.GetAllPairsAsync();
+                    var item = await _impl.TryGetPairLastTradePriceAsync(assetPair);
+
+                    return item != null ? new CachedTradingDataItemAssetPair<double>(item) : null;
+                },
+                absoluteExpiration: _cacheLastTradePriceExpirationPeriod);
+
+            return cachedItem?.ToModel(assetPair);
+        }
+
+        public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsVolumeAsync()
+        {
+            var cachedItems = await _cacheVolume.TryGetFromCacheAsync(
+                "Market:TradingData:Volume:AllPairs",
+                async () =>
+                {
+                    var items = await _impl.TryGetAllPairsVolumeAsync();
 
                     return items.ToDictionary(
                         i => i.AssetPair,
-                        i => new CachedTradingDataAssetPair(i));
+                        i => new CachedTradingDataItemAssetPair<double>(i));
                 },
-                absoluteExpiration: _cacheExpirationPeriod);
+                absoluteExpiration: _cacheVolumeExpirationPeriod);
+
+            return cachedItems.Select(i => i.Value.ToModel(i.Key));
+        }
+
+        public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsLastTradePriceAsync()
+        {
+            var cachedItems = await _cacheLastTradePrice.TryGetFromCacheAsync(
+                "Market:TradingData:LastTradePrice:AllPairs",
+                async () =>
+                {
+                    var items = await _impl.TryGetAllPairsLastTradePriceAsync();
+
+                    return items.ToDictionary(
+                        i => i.AssetPair,
+                        i => new CachedTradingDataItemAssetPair<double>(i));
+                },
+                absoluteExpiration: _cacheLastTradePriceExpirationPeriod);
 
             return cachedItems.Select(i => i.Value.ToModel(i.Key));
         }

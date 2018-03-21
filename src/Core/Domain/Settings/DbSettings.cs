@@ -40,6 +40,7 @@ namespace Core.Domain.Settings
 
     public class AzureQueueSettings
     {
+        [AzureQueueCheck]
         public string ConnectionString { get; set; }
 
         public string QueueName { get; set; }
@@ -92,9 +93,13 @@ namespace Core.Domain.Settings
 
     public class DbSettings
     {
+        [AzureTableCheck]
         public string HTradesConnString { get; set; }
+        [AzureTableCheck]
         public string BalancesInfoConnString { get; set; }
+        [AzureTableCheck]
         public string HLiquidityConnString { get; set; }
+        //[AzureTableCheck]
         public string LogsConnString { get; set; }
     }
 
@@ -109,7 +114,8 @@ namespace Core.Domain.Settings
 
         public TimeSpan MarketCapitalizationExpirationPeriod { get; set; }
         public TimeSpan MarketProfileExpirationPeriod { get; set; }
-        public TimeSpan MarketTradingDataExpirationPeriod { get; set; }
+        public TimeSpan MarketTradingDataVolumeExpirationPeriod { get; set; }
+        public TimeSpan MarketTradingDataLastTradePriceExpirationPeriod { get; set; }
         public TimeSpan RegistrationsInfoExpirationPeriod { get; set; }
     }
 

@@ -25,7 +25,7 @@ namespace LykkePublicAPI.Controllers
         /// </summary>
         /// <param name="market">The market type. Acceptable values: Spot, Mt.</param>
         [HttpGet("history/{market}/available")]
-        [ProducesResponseType(typeof(CandlesHistoryResponse<ApiCandle>), 200)]
+        [ProducesResponseType(typeof(string[]), 200)]
         [ProducesResponseType(typeof(ApiError), 400)]
         public async Task<IActionResult> GetAvailableAssets(MarketType market)
         {

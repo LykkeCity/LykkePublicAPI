@@ -100,18 +100,7 @@ namespace LykkePublicAPI.Models
         public double OV { get; set; }
     }
 
-    public class ApiCandle2
-    {
-        public DateTime DateTime { get; set; }
-        public double Open { get; set; }
-        public double Close { get; set; }
-        public double High { get; set; }
-        public double Low { get; set; }
-        public double Volume { get; set; }
-        public double OppositeVolume { get; set; }
-    }
-
-    public class CandlesHistoryResponse<T>
+    public class CandlesHistoryResponse
     {
         public string AssetPair { get; set; }
 
@@ -122,7 +111,7 @@ namespace LykkePublicAPI.Models
 
         [JsonConverter(typeof(StringEnumConverter))]
         public PriceType Type { get; set; }
-        public List<T> Data { get; set; } = new List<T>();
+        public List<ApiCandle> Data { get; set; } = new List<ApiCandle>();
     }
 
     public class ApiCommonTrade
@@ -249,20 +238,6 @@ namespace LykkePublicAPI.Models
             } : null;
         }
 
-        public static ApiCandle2 ToApiCandle2(this Candle candle)
-        {
-            return (candle != null) ? new ApiCandle2
-            {
-                DateTime = candle.DateTime,
-                Open = candle.Open,
-                Close = candle.Close,
-                High = candle.High,
-                Low = candle.Low,
-                Volume = candle.TradingVolume,
-                OppositeVolume = candle.TradingOppositeVolume
-            } : null;
-        }
-
         public static IEnumerable<ApiCandle> ToApiModel(this IEnumerable<Candle> candles)
         {
             if (candles != null)
@@ -270,17 +245,6 @@ namespace LykkePublicAPI.Models
                 foreach (var candle in candles)
                 {
                     yield return candle.ToApiCandle();
-                }
-            }
-        }
-
-        public static IEnumerable<ApiCandle2> ToApiModel2(this IEnumerable<Candle> candles)
-        {
-            if (candles != null)
-            {
-                foreach (var candle in candles)
-                {
-                    yield return candle.ToApiCandle2();
                 }
             }
         }

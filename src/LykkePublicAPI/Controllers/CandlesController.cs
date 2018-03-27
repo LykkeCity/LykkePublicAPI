@@ -51,7 +51,7 @@ namespace LykkePublicAPI.Controllers
         }
 
         /// <summary>
-        /// [Obsolete] Get candles for specified period and asset pair. Please, use the -GET- method instead of this.
+        /// [Obsolete] Get candles for specified period and asset pair. Please, use the -GET- api/history/{market}/{assetPair}/{period}/{type}/{from}/{to} method instead of this.
         /// </summary>
         /// <remarks>
         /// Available markets
@@ -74,7 +74,7 @@ namespace LykkePublicAPI.Controllers
         /// <param name="assetPairId">Asset pair Id</param>
         /// <param name="market">Market type</param>
         /// <param name="request">Request model</param>
-        [Obsolete("This method will be removed in future versions. Please, migrate your implementation on using the [GET] alternative method.")]
+        [Obsolete("This method will be removed in future versions. Please, migrate your implementation on using the [GET] api/history/{market}/{assetPair}/{period}/{type}/{from}/{to} method.")]
         [HttpPost("history/{assetPairId}/{market?}")]
         [ProducesResponseType(typeof(CandlesHistoryResponse<ApiCandle>), 200)]
         [ProducesResponseType(typeof(ApiError), 400)]

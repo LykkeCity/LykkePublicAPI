@@ -188,11 +188,13 @@ namespace LykkePublicAPI.Controllers
             
             var buyHistory = await candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Bid, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
             var sellHistory = await candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Ask, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
+            var tradeHistory = await candlesHistoryService.GetCandlesHistoryAsync(assetPairId, CandlePriceType.Trades, request.Period.ToCandlesHistoryServiceApiModel(), request.DateTime, toDate);
 
             var buyCandle = buyHistory.History.SingleOrDefault();
             var sellCandle = sellHistory.History.SingleOrDefault();
+            var tradeCandle = tradeHistory.History.SingleOrDefault();
 
-            return Convertions.ToApiModel(assetPairId, buyCandle, sellCandle);
+            return Convertions.ToApiModel(assetPairId, buyCandle, sellCandle, tradeCandle);
         }
     }
 }

@@ -30,7 +30,8 @@ namespace LykkePublicAPI.Models
     {
         Bid = 1,
         Ask = 2,
-        Mid = 3
+        Mid = 3,
+        Trades = 4
     }
 
     public class AssetPairsRateHistoryRequest
@@ -143,6 +144,8 @@ namespace LykkePublicAPI.Models
                     return CandlePriceType.Ask;
                 case PriceType.Mid:
                     return CandlePriceType.Mid;
+                case PriceType.Trades:
+                    return CandlePriceType.Trades;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }

@@ -196,15 +196,31 @@ namespace LykkePublicAPI.Models
             return assetPairs.Select(x => x.ToApiModel());
         }
 
-        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, Candle buyCandle, Candle sellCandle)
+        public static ApiAssetPairHistoryRateModel ToApiModel(string assetPairId, Candle buyCandle, Candle sellCandle, Candle tradeCandle)
         {
+            double? GetVolume(double? buyVolume, double? askVolume, double? tradeVolume)
+            {
+                var result = buyVolume;
+
+                if (askVolume.HasValue)
+                {
+                    result = result.HasValue ? Math.Max(result.Value, askVolume.Value) : askVolume;
+                }
+                if (tradeVolume.HasValue)
+                {
+                    result = result.HasValue ? Math.Max(result.Value, tradeVolume.Value) : tradeVolume;
+                }
+
+                return result;
+            }
+
             return new ApiAssetPairHistoryRateModel
             {
                 Id = assetPairId,
                 Ask = sellCandle?.Close,
                 Bid = buyCandle?.Close,
-                TradingVolume = buyCandle?.TradingVolume ?? sellCandle?.TradingVolume,
-                TradingOppositeVolume = buyCandle?.TradingOppositeVolume ?? sellCandle?.TradingOppositeVolume
+                TradingVolume = GetVolume(buyCandle?.TradingVolume, sellCandle?.TradingVolume, tradeCandle?.TradingVolume),
+                TradingOppositeVolume = GetVolume(buyCandle?.TradingOppositeVolume, sellCandle?.TradingOppositeVolume, tradeCandle?.TradingOppositeVolume)
             };
         }
 

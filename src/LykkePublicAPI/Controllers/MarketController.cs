@@ -67,7 +67,7 @@ namespace LykkePublicAPI.Controllers
                         result.Add(assetTradingDataVolume.AssetPair, marketData);
                     }
 
-                    marketData.Volume24H = assetTradingDataVolume.Parameter;
+                    marketData.Volume24H = assetTradingDataVolume.Value;
                 }
             }
 
@@ -85,7 +85,7 @@ namespace LykkePublicAPI.Controllers
                         result.Add(tradingDataLastTradePrice.AssetPair, marketData);
                     }
 
-                    marketData.LastPrice = tradingDataLastTradePrice.Parameter;
+                    marketData.LastPrice = tradingDataLastTradePrice.Value;
                 }
             }
 
@@ -118,10 +118,10 @@ namespace LykkePublicAPI.Controllers
             }
 
             if (tradingDataVolume != null)
-                result.Volume24H = tradingDataVolume.Parameter;
+                result.Volume24H = tradingDataVolume.Value;
 
             if (tradingDataLastTradePrice != null)
-                result.LastPrice = tradingDataLastTradePrice.Parameter;
+                result.LastPrice = tradingDataLastTradePrice.Value;
 
             return result;
         }

@@ -16,7 +16,7 @@ namespace Services.CacheModels
         
         public CachedTradingDataItemAssetPair(AssetPairTradingDataItem<T> source)
         {
-            Value = source.Parameter;
+            Value = source.Value;
         }
 
         [UsedImplicitly]

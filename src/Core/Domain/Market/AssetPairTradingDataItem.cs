@@ -3,12 +3,12 @@
     public class AssetPairTradingDataItem<T>
     {
         public string AssetPair { get; }
-        public T Parameter { get; }
+        public T Value { get; }
 
-        public AssetPairTradingDataItem(string assetPair, T parameter)
+        public AssetPairTradingDataItem(string assetPair, T value)
         {
             AssetPair = assetPair;
-            Parameter = parameter;
+            Value = value;
         }
     }
 }

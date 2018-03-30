@@ -50,7 +50,7 @@ namespace Services
             {
                 var volume24 = spotAssetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
 
-                if (candles.Item2.TryGetValue(spotAssetCandles.Key, out var mtAssetCandles))
+                if (candles.mtCandles.TryGetValue(spotAssetCandles.Key, out var mtAssetCandles))
                 {
                     volume24 += mtAssetCandles.History.Sum(c => c.TradingOppositeVolume);
                 }

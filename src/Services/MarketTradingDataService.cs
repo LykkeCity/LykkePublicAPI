@@ -21,20 +21,20 @@ namespace Services
         
         public async Task<AssetPairTradingDataItem<double>> TryGetPairVolumeAsync(string assetPair)
         {
-            var candles = await GetLastDayCandlesAsync(assetPair); // Item1 = spot, Item2 = MT
+            var candles = await GetLastDayCandlesAsync(assetPair);
 
-            var volume24H = candles.Item1.History.Sum(c => c.TradingOppositeVolume) +
-                            candles.Item2.History.Sum(c => c.TradingOppositeVolume);
+            var volume24H = candles.spotCandles.History.Sum(c => c.TradingOppositeVolume) +
+                            candles.mtCandles.History.Sum(c => c.TradingOppositeVolume);
 
             return new AssetPairTradingDataItem<double>(assetPair, volume24H);
         }
 
         public async Task<AssetPairTradingDataItem<double>> TryGetPairLastTradePriceAsync(string assetPair)
         {
-            var candles = await GetLastDayCandlesAsync(assetPair); // Item1 = spot, Item2 = MT
+            var candles = await GetLastDayCandlesAsync(assetPair, 1); // Getting candles for the last hour
 
-            var lastTradePrice = candles.Item1.History.LastOrDefault()?.Close
-                                 ?? candles.Item2.History.LastOrDefault()?.Close
+            var lastTradePrice = candles.spotCandles.History.LastOrDefault()?.Close
+                                 ?? candles.mtCandles.History.LastOrDefault()?.Close
                                  ?? 0;
 
             return new AssetPairTradingDataItem<double>(assetPair, lastTradePrice);
@@ -42,11 +42,11 @@ namespace Services
 
         public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsVolumeAsync()
         {
-            var candles = await GetLastDayCandlesAsync(); // Item1 = spot, Item2 = MT
+            var candles = await GetLastDayCandlesAsync();
 
             var result = new Dictionary<string, AssetPairTradingDataItem<double>>();
 
-            foreach (var spotAssetCandles in candles.Item1)
+            foreach (var spotAssetCandles in candles.spotCandles)
             {
                 var volume24 = spotAssetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
 
@@ -62,7 +62,7 @@ namespace Services
                 result.Add(assetPairDataItem.AssetPair, assetPairDataItem);
             }
 
-            foreach (var mtAssetCandles in candles.Item2)
+            foreach (var mtAssetCandles in candles.mtCandles)
             {
                 if (!result.ContainsKey(mtAssetCandles.Key))
                 {
@@ -79,11 +79,11 @@ namespace Services
 
         public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsLastTradePriceAsync()
         {
-            var candles = await GetLastDayCandlesAsync(); // Item1 = spot, Item2 = MT
+            var candles = await GetLastDayCandlesAsync(1); // Getting candles for the last hour
 
             var result = new Dictionary<string, AssetPairTradingDataItem<double>>();
 
-            foreach (var spotAssetCandles in candles.Item1)
+            foreach (var spotAssetCandles in candles.spotCandles)
             {
                 var assetPairDataItem = new AssetPairTradingDataItem<double>(
                     spotAssetCandles.Key,
@@ -92,7 +92,7 @@ namespace Services
                 result.Add(assetPairDataItem.AssetPair, assetPairDataItem);
             }
 
-            foreach (var mtAssetCandles in candles.Item2)
+            foreach (var mtAssetCandles in candles.mtCandles)
             {
                 if (!result.ContainsKey(mtAssetCandles.Key))
                 {
@@ -108,48 +108,48 @@ namespace Services
         }
 
         private async
-            Task<Tuple<IReadOnlyDictionary<string, CandlesHistoryResponseModel>,
-                IReadOnlyDictionary<string, CandlesHistoryResponseModel>>> GetLastDayCandlesAsync()
+            Task<(IReadOnlyDictionary<string, CandlesHistoryResponseModel> spotCandles,
+                IReadOnlyDictionary<string, CandlesHistoryResponseModel> mtCandles)> GetLastDayCandlesAsync(int periodInHours = 24)
         {
-            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot);
-            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt);
+            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot, periodInHours);
+            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt, periodInHours);
 
-            var spotCandles = await spotCandlesTask;
-            var mtCandles = await mtCandlesTask;
+            var spotCandlesData = await spotCandlesTask;
+            var mtCandlesData = await mtCandlesTask;
 
-            return Tuple.Create(spotCandles, mtCandles);
+            return (spotCandles: spotCandlesData, mtCandles: mtCandlesData);
         }
 
-        private async Task<Tuple<CandlesHistoryResponseModel, CandlesHistoryResponseModel>> GetLastDayCandlesAsync(
-            string assetPair)
+        private async Task<(CandlesHistoryResponseModel spotCandles, CandlesHistoryResponseModel mtCandles)> GetLastDayCandlesAsync(
+            string assetPair, int periodInHours = 24)
         {
-            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot, assetPair);
-            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt, assetPair);
+            var spotCandlesTask = GetLastDayCandlesAsync(MarketType.Spot, assetPair, periodInHours);
+            var mtCandlesTask = GetLastDayCandlesAsync(MarketType.Mt, assetPair, periodInHours);
 
-            var spotCandles = await spotCandlesTask;
-            var mtCandles = await mtCandlesTask;
+            var spotCandlesData = await spotCandlesTask;
+            var mtCandlesData = await mtCandlesTask;
 
-            return Tuple.Create(spotCandles, mtCandles);
+            return (spotCandles: spotCandlesData, mtCandles: mtCandlesData);
         }
 
-        private async Task<IReadOnlyDictionary<string, CandlesHistoryResponseModel>> GetLastDayCandlesAsync(MarketType market)
+        private async Task<IReadOnlyDictionary<string, CandlesHistoryResponseModel>> GetLastDayCandlesAsync(MarketType market, int periodInHours = 24)
         {
             var assetPairs = await GetAvailableAssetPairsAsync(market);
             var candlesService = _candlesHistoryServiceProvider.Get(market);
             var to = DateTime.UtcNow; // exclusive
-            var from = to - TimeSpan.FromHours(25); // inclusive
+            var from = to - TimeSpan.FromHours(periodInHours + 1); // inclusive
 
             var candles = await candlesService.TryGetCandlesHistoryBatchAsync(assetPairs, CandlePriceType.Trades, CandleTimeInterval.Hour, from, to);
 
             return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
         }
 
-        private async Task<CandlesHistoryResponseModel> GetLastDayCandlesAsync(MarketType market, string assetPair)
+        private async Task<CandlesHistoryResponseModel> GetLastDayCandlesAsync(MarketType market, string assetPair, int periodInHours = 24)
         {
             var assetPairs = await GetAvailableAssetPairsAsync(market);
             var candlesService = _candlesHistoryServiceProvider.Get(market);
             var to = DateTime.UtcNow; // exclusive
-            var from = to - TimeSpan.FromHours(25); // inclusive
+            var from = to - TimeSpan.FromHours(periodInHours + 1); // inclusive
 
             if (!assetPairs.Contains(assetPair))
             {
@@ -163,7 +163,6 @@ namespace Services
 
             return candles;
         }
-
 
         private Task<IList<string>> GetAvailableAssetPairsAsync(MarketType market)
         {

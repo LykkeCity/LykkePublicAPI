@@ -12,11 +12,11 @@ namespace Services.CacheModels
     {
         [Key(0)]
         [UsedImplicitly]
-        public T Parameter { get; set; }
+        public T Value { get; set; }
         
         public CachedTradingDataItemAssetPair(AssetPairTradingDataItem<T> source)
         {
-            Parameter = source.Parameter;
+            Value = source.Parameter;
         }
 
         [UsedImplicitly]
@@ -26,7 +26,7 @@ namespace Services.CacheModels
 
         public AssetPairTradingDataItem<T> ToModel(string assetPair)
         {
-            return new AssetPairTradingDataItem<T>(assetPair, Parameter);
+            return new AssetPairTradingDataItem<T>(assetPair, Value);
         }
     }
 }

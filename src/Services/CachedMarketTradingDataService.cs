@@ -11,21 +11,18 @@ namespace Services
 {
     public class CachedMarketTradingDataService : IMarketTradingDataService
     {
-        private readonly IDistributedCache _cacheVolume;
-        private readonly IDistributedCache _cacheLastTradePrice;
+        private readonly IDistributedCache _cache;
         private readonly IMarketTradingDataService _impl;
         private readonly TimeSpan _cacheVolumeExpirationPeriod;
         private readonly TimeSpan _cacheLastTradePriceExpirationPeriod;
 
         public CachedMarketTradingDataService(
-            IDistributedCache cacheVolume,
-            IDistributedCache cacheLastTradePrice,
+            IDistributedCache cache,
             IMarketTradingDataService impl,
             TimeSpan cacheVolumeExpirationPeriod,
             TimeSpan cacheLastTradePriceExpirationPeriod)
         {
-            _cacheVolume = cacheVolume;
-            _cacheLastTradePrice = cacheLastTradePrice;
+            _cache = cache;
             _impl = impl;
             _cacheVolumeExpirationPeriod = cacheVolumeExpirationPeriod;
             _cacheLastTradePriceExpirationPeriod = cacheLastTradePriceExpirationPeriod;
@@ -33,7 +30,7 @@ namespace Services
 
         public async Task<AssetPairTradingDataItem<double>> TryGetPairVolumeAsync(string assetPair)
         {
-            var cachedItem = await _cacheVolume.TryGetFromCacheAsync(
+            var cachedItem = await _cache.TryGetFromCacheAsync(
                 $"Market:TradingData:Volume:AssetPairs:{assetPair}",
                 async () =>
                 {
@@ -48,7 +45,7 @@ namespace Services
 
         public async Task<AssetPairTradingDataItem<double>> TryGetPairLastTradePriceAsync(string assetPair)
         {
-            var cachedItem = await _cacheLastTradePrice.TryGetFromCacheAsync(
+            var cachedItem = await _cache.TryGetFromCacheAsync(
                 $"Market:TradingData:LastTradePrice:AssetPairs:{assetPair}",
                 async () =>
                 {
@@ -63,7 +60,7 @@ namespace Services
 
         public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsVolumeAsync()
         {
-            var cachedItems = await _cacheVolume.TryGetFromCacheAsync(
+            var cachedItems = await _cache.TryGetFromCacheAsync(
                 "Market:TradingData:Volume:AllPairs",
                 async () =>
                 {
@@ -80,7 +77,7 @@ namespace Services
 
         public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsLastTradePriceAsync()
         {
-            var cachedItems = await _cacheLastTradePrice.TryGetFromCacheAsync(
+            var cachedItems = await _cache.TryGetFromCacheAsync(
                 "Market:TradingData:LastTradePrice:AllPairs",
                 async () =>
                 {

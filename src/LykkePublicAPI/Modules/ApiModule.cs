@@ -76,7 +76,6 @@ namespace LykkePublicAPI.Modules
             builder.RegisterDecorator<IMarketTradingDataService>(
                 (c, inner) => new CachedMarketTradingDataService(
                     c.Resolve<IDistributedCache>(),
-                    c.Resolve<IDistributedCache>(),
                     inner,
                     _settings.PublicApi.CacheSettings.MarketTradingDataVolumeExpirationPeriod,
                     _settings.PublicApi.CacheSettings.MarketTradingDataLastTradePriceExpirationPeriod),

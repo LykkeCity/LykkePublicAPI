@@ -21,8 +21,8 @@ namespace Services
         
         public async Task<AssetPairTradingDataItem<double>> TryGetPairVolumeAsync(string assetPair)
         {
-            var spotCandlesTask = GetLastIntire24HoursCandlesAsync(MarketType.Spot, assetPair);
-            var mtCandlesTask = GetLastIntire24HoursCandlesAsync(MarketType.Mt, assetPair);
+            var spotCandlesTask = GetLastEntire24HoursCandlesAsync(MarketType.Spot, assetPair);
+            var mtCandlesTask = GetLastEntire24HoursCandlesAsync(MarketType.Mt, assetPair);
 
             var spotCandles = await spotCandlesTask;
             var mtCandles = await mtCandlesTask;
@@ -50,8 +50,8 @@ namespace Services
 
         public async Task<IEnumerable<AssetPairTradingDataItem<double>>> TryGetAllPairsVolumeAsync()
         {
-            var spotCandlesTask = GetLastIntire24HoursCandlesAsync(MarketType.Spot);
-            var mtCandlesTask = GetLastIntire24HoursCandlesAsync(MarketType.Mt);
+            var spotCandlesTask = GetLastEntire24HoursCandlesAsync(MarketType.Spot);
+            var mtCandlesTask = GetLastEntire24HoursCandlesAsync(MarketType.Mt);
 
             var spotCandles = await spotCandlesTask;
             var mtCandles = await mtCandlesTask;
@@ -123,7 +123,7 @@ namespace Services
             return result.Values;
         }
 
-        private async Task<IReadOnlyDictionary<string, CandlesHistoryResponseModel>> GetLastIntire24HoursCandlesAsync(MarketType market)
+        private async Task<IReadOnlyDictionary<string, CandlesHistoryResponseModel>> GetLastEntire24HoursCandlesAsync(MarketType market)
         {
             var assetPairs = await GetAvailableAssetPairsAsync(market);
             var candlesService = _candlesHistoryServiceProvider.Get(market);
@@ -141,7 +141,7 @@ namespace Services
             return candles ?? new Dictionary<string, CandlesHistoryResponseModel>();
         }
 
-        private async Task<CandlesHistoryResponseModel> GetLastIntire24HoursCandlesAsync(MarketType market, string assetPair)
+        private async Task<CandlesHistoryResponseModel> GetLastEntire24HoursCandlesAsync(MarketType market, string assetPair)
         {
             var assetPairs = await GetAvailableAssetPairsAsync(market);
             var candlesService = _candlesHistoryServiceProvider.Get(market);

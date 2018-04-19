@@ -11,6 +11,7 @@ namespace LykkePublicAPI.Models.Trades
         public string AssetPairId { set; get; }
         public DateTime DateTime { set; get; }
         public double Volume { set; get; }
+        public int? Index { set; get; }
         public double Price { set; get; }
         [JsonConverter(typeof(StringEnumConverter))]
         public TradeAction Action { set; get; }
@@ -27,7 +28,8 @@ namespace LykkePublicAPI.Models.Trades
                 DateTime = trade.DateTime,
                 Volume = trade.Volume,
                 Price = trade.Price,
-                Action = trade.Action
+                Action = trade.Action,
+                Index = trade.Index
             };
         }
     }

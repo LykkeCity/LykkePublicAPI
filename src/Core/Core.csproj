@@ -8,12 +8,13 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.0.0" />
+    <PackageReference Include="Lykke.Common" Version="6.1.0" />
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="1.0.17" />
     <PackageReference Include="Lykke.MarketProfileService.Client" Version="1.0.19" />
+    <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.0" />
     <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="2.1.0" />
     <PackageReference Include="Lykke.Service.TradesAdapter.Client" Version="1.0.0" />
-    <PackageReference Include="Lykke.SettingsReader" Version="2.1.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="2.3.1" />
   </ItemGroup>
 </Project>

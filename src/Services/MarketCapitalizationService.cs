@@ -2,24 +2,24 @@
 using System.Threading.Tasks;
 using Common;
 using Core;
-using Core.Domain.Accounts;
 using Core.Services;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Balances.Client;
 
 namespace Services
 {
     public class MarketCapitalizationService : IMarketCapitalizationService
     {
-        private readonly IWalletsRepository _walletsRepository;
+        private readonly IBalancesClient _balancesClient;
         private readonly ICachedAssetsService _assetsService;
         private readonly ISrvRatesHelper _srvRatesHelper;
 
         public MarketCapitalizationService(
-            IWalletsRepository walletsRepository,
+            IBalancesClient balancesClient,
             ICachedAssetsService assetsService,
             ISrvRatesHelper srvRatesHelper)
         {
-            _walletsRepository = walletsRepository;
+            _balancesClient = balancesClient;
             _assetsService = assetsService;
             _srvRatesHelper = srvRatesHelper;
         }
@@ -41,27 +41,14 @@ namespace Services
 
             var asset = await _assetsService.TryGetAssetAsync(market);
             
-            var amount = 0d;
-            var chunksCount = 0;
+            var balance = (await _balancesClient.GetTotalBalances()).FirstOrDefault(item => item.AssetId == LykkeConstants.LykkeAssetId);
 
-            await _walletsRepository.GetWalletsByChunkAsync(pairs =>
-            {
-                var c = pairs
-                    .Select(x => x.Value?.FirstOrDefault(y => y.AssetId == LykkeConstants.LykkeAssetId))
-                    .Sum(x => x?.Balance ?? 0);
-
-                amount += c;
-                ++chunksCount;
-
-                return Task.CompletedTask;
-            });
-
-            if (chunksCount == 0)
+            if (balance == null)
             {
                 return null;
             }
 
-            return (amount * rate).TruncateDecimalPlaces(asset.Accuracy);
+            return ((double)balance.Balance * rate).TruncateDecimalPlaces(asset.Accuracy);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lykke.Service.Balances.Client;
 using Lykke.Service.TradesAdapter.Client;
 using Lykke.SettingsReader.Attributes;
 
@@ -15,6 +16,7 @@ namespace Core.Domain.Settings
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
         public RegistrationServiceClientSettings RegistrationServiceClient { get; set; }
         public TradesAdapterServiceClientSettings TradesAdapterServiceClient { get; set; }
+        public BalancesServiceClientSettings BalancesServiceClient { get; set; }
     }
 
     public class RateLimitSettings

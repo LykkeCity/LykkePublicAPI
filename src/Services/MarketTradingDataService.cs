@@ -30,6 +30,9 @@ namespace Services
             var volume24H = spotCandles.History.Sum(c => c.TradingOppositeVolume) +
                             mtCandles.History.Sum(c => c.TradingOppositeVolume);
 
+            //https://lykkex.atlassian.net/browse/LWDEV-7087
+            volume24H *= 2;
+
             return new AssetPairTradingDataItem<double>(assetPair, volume24H);
         }
 
@@ -67,6 +70,9 @@ namespace Services
                     volume24 += mtAssetCandles.History.Sum(c => c.TradingOppositeVolume);
                 }
 
+                //https://lykkex.atlassian.net/browse/LWDEV-7087
+                volume24 *= 2;
+
                 var assetPairDataItem = new AssetPairTradingDataItem<double>(
                     spotAssetCandles.Key,
                     volume24);
@@ -78,9 +84,14 @@ namespace Services
             {
                 if (!result.ContainsKey(mtAssetCandles.Key))
                 {
+                    var volume24 = mtAssetCandles.Value.History.Sum(c => c.TradingOppositeVolume);
+
+                    //https://lykkex.atlassian.net/browse/LWDEV-7087
+                    volume24 *= 2;
+
                     var assetPairDataItem = new AssetPairTradingDataItem<double>(
                         mtAssetCandles.Key,
-                        mtAssetCandles.Value.History.Sum(c => c.TradingOppositeVolume));
+                        volume24);
 
                     result.Add(assetPairDataItem.AssetPair, assetPairDataItem);
                 }

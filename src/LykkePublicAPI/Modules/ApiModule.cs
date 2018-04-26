@@ -87,6 +87,10 @@ namespace LykkePublicAPI.Modules
                 .WithParameter(TypedParameter.From(_settings.PublicApi.CacheSettings.RegistrationsInfoExpirationPeriod))
                 .SingleInstance();
 
+            builder.RegisterType<SrvNinjaHelper>()
+                .As<ISrvNinjaHelper>()
+                .WithParameter(TypedParameter.From(_settings.NinjaServiceClient.ServiceUrl));
+
             RegisterServiceClients(builder);
             RegisterRedisCache(builder);
             ConfigureRateLimits();

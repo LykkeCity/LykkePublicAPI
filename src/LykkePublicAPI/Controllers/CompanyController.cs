@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Core;
 using Core.Domain.Settings;
@@ -14,13 +15,13 @@ namespace LykkePublicAPI.Controllers
         private readonly LykkeCompanyData _companyInfo;
         private readonly IMarketCapitalizationService _marketCapitalizationService;
         private readonly IRegistrationsInfoCacheService _registrationsInfoCacheService;
-        private readonly ISrvNinjaHelper _ninjaService;
+        private readonly INinjaNetworkClient _ninjaService;
 
         public CompanyController(
             LykkeCompanyData companyInfo,
             IMarketCapitalizationService marketCapitalizationService,
             IRegistrationsInfoCacheService registrationsInfoCacheService,
-            ISrvNinjaHelper ninjaService
+            INinjaNetworkClient ninjaService
             )
         {
             _companyInfo = companyInfo;
@@ -37,9 +38,8 @@ namespace LykkePublicAPI.Controllers
         {
             var tradingWalletCoins = await _marketCapitalizationService.GetCapitalization(LykkeConstants.LykkeAssetId) ?? 0;
 
-            double treasuryAmount = 0;
-            foreach (var address in _companyInfo.LkkTreasuryWallets)
-                treasuryAmount += await _ninjaService.GetBalance(address, LykkeConstants.LykkeAssetId);
+            var treasuryAmountTasks = _companyInfo.LkkTreasuryWallets.Select(address => _ninjaService.GetBalanceAsync(address, LykkeConstants.LykkeAssetId));
+            var treasuryAmount = (await Task.WhenAll(treasuryAmountTasks)).Sum();
 
             var privateWalletCoins = _companyInfo.LkkTotalAmount - tradingWalletCoins -
                                      treasuryAmount;

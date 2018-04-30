@@ -98,8 +98,6 @@ namespace Core.Domain.Settings
         [AzureTableCheck]
         public string HTradesConnString { get; set; }
         [AzureTableCheck]
-        public string BalancesInfoConnString { get; set; }
-        [AzureTableCheck]
         public string HLiquidityConnString { get; set; }
         //[AzureTableCheck]
         public string LogsConnString { get; set; }

@@ -10,6 +10,7 @@ namespace Core.Domain.Settings
         public PublicApiSettings PublicApi { get; set; }
         public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
         public CandlesHistoryServiceClientSettings MtCandlesHistoryServiceClient { get; set; }
+        public NinjaServiceClientSettings NinjaServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
@@ -56,6 +57,11 @@ namespace Core.Domain.Settings
         public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
     }
 
+    public class NinjaServiceClientSettings
+    {
+        public string ServiceUrl { get; set; }
+    }
+
     public class MarketProfileServiceClientSettings
     {
         [HttpCheck("/api/isalive")]
@@ -88,7 +94,7 @@ namespace Core.Domain.Settings
     public class LykkeCompanyData
     {
         public double LkkTotalAmount { get; set; }
-        public double LkkCompanyTreasuryAmount { get; set; }
+        public string[] LkkTreasuryWallets { get; set; }
     }
 
     public class DbSettings

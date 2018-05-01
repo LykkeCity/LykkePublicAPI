@@ -13,14 +13,14 @@ namespace Services
     /// <summary>
     /// The class responsible for communication with Bitcoin Ninja server.
     /// </summary>
-    public class SrvNinjaHelper : ISrvNinjaHelper
+    public class NinjaNetworkClient : INinjaNetworkClient
     {
         private readonly ICachedAssetsService _assetsService;
         private readonly string _url;
 
         #region Initialization
 
-        public SrvNinjaHelper(ICachedAssetsService assetsService, string url)
+        public NinjaNetworkClient(ICachedAssetsService assetsService, string url)
         {
             _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
 
@@ -34,8 +34,8 @@ namespace Services
 
         #region Public
 
-        /// <inheritdoc cref="ISrvNinjaHelper"/>
-        public async Task<double> GetBalance(string address, string assetName)
+        /// <inheritdoc cref="INinjaNetworkClient"/>
+        public async Task<double> GetBalanceAsync(string address, string assetName)
         {
             if (string.IsNullOrWhiteSpace(address))
                 throw new ArgumentNullException(nameof(address));
@@ -44,15 +44,15 @@ namespace Services
 
             var assets = await _assetsService.GetAllAssetsAsync();
             if (!assets?.Any() ?? false)
-                throw new IOException("Could not obtain the list of available assets.");
+                throw new InvalidOperationException("Could not obtain the list of available assets.");
 
             var asset = assets.FirstOrDefault(a => a.Id == assetName);
             if (asset == null)
-                return 0; // There is no such an asset -> we have zero balance for it.
+                throw new ArgumentException($"There is no such an asset: {assetName}"); // Only exception, only hardcore :)
 
             var btc = assets.First(a => a.Id == LykkeConstants.BitcoinAssetId);
 
-            var response = await ExecuteRequest<BalanceSummaryModel>($"{_url}balances/{address}/summary?colored=true");
+            var response = await ExecuteRequestAsync<BalanceSummaryModel>($"{_url}balances/{address}/summary?colored=true");
 
             // Check if they asked for BTC balance. If so, we can go by a short circuit.
             if (asset.BlockChainAssetId == null)
@@ -70,20 +70,22 @@ namespace Services
 
         // May throw exception in case of network problems or data corruption (when unable to decerialize).
         // The possible exception should be handled in the caller code.
-        private static async Task<T> ExecuteRequest<T>(string request)
+        private static async Task<T> ExecuteRequestAsync<T>(string request)
         {
             var webRequest = (HttpWebRequest) WebRequest.Create(request);
             webRequest.Method = "GET";
             webRequest.ContentType = "application/x-www-form-urlencoded";
 
-            var webResponse = await webRequest.GetResponseAsync();
             string resultString;
 
-            using (var recieveStream = webResponse.GetResponseStream())
+            using (var webResponse = await webRequest.GetResponseAsync())
             {
-                using (var sr = new StreamReader(recieveStream))
+                using (var recieveStream = webResponse.GetResponseStream())
                 {
-                    resultString = await sr.ReadToEndAsync();
+                    using (var sr = new StreamReader(recieveStream))
+                    {
+                        resultString = await sr.ReadToEndAsync();
+                    }
                 }
             }
 

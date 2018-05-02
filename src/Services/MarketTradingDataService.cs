@@ -112,9 +112,13 @@ namespace Services
 
             foreach (var spotAssetCandles in spotCandles)
             {
+                var candleValue = spotAssetCandles.Value;
+                if (candleValue == null)
+                    mtCandles.TryGetValue(spotAssetCandles.Key, out candleValue);
+                
                 var assetPairDataItem = new AssetPairTradingDataItem<double>(
                     spotAssetCandles.Key,
-                    spotAssetCandles.Value?.Close ?? 0);
+                    candleValue?.Close ?? 0);
 
                 result.Add(assetPairDataItem.AssetPair, assetPairDataItem);
             }

@@ -11,6 +11,7 @@ using Core.Domain.Settings;
 using Core.Services;
 using Lykke.MarketProfileService.Client;
 using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Balances.Client;
 using Lykke.Service.Registration;
 using Lykke.Service.TradesAdapter.Client;
 using Microsoft.Extensions.Caching.Distributed;
@@ -126,6 +127,7 @@ namespace LykkePublicAPI.Modules
                 .SingleInstance();
             
             builder.RegisterRegistrationClient(_settings.RegistrationServiceClient.ServiceUrl, _log);
+            builder.RegisterBalancesClient(_settings.BalancesServiceClient.ServiceUrl, _log);
         }
 
         private void RegisterRedisCache(ContainerBuilder builder)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lykke.Service.Balances.Client;
 using Lykke.Service.TradesAdapter.Client;
 using Lykke.SettingsReader.Attributes;
 
@@ -16,6 +17,7 @@ namespace Core.Domain.Settings
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
         public RegistrationServiceClientSettings RegistrationServiceClient { get; set; }
         public TradesAdapterServiceClientSettings TradesAdapterServiceClient { get; set; }
+        public BalancesServiceClientSettings BalancesServiceClient { get; set; }
     }
 
     public class RateLimitSettings
@@ -101,8 +103,6 @@ namespace Core.Domain.Settings
     {
         [AzureTableCheck]
         public string HTradesConnString { get; set; }
-        [AzureTableCheck]
-        public string BalancesInfoConnString { get; set; }
         [AzureTableCheck]
         public string HLiquidityConnString { get; set; }
         //[AzureTableCheck]

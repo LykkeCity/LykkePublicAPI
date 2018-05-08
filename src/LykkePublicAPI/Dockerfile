@@ -1,4 +1,4 @@
-FROM microsoft/aspnetcore:2.0
+FROM microsoft/dotnet:2.1-runtime
 ENTRYPOINT ["dotnet", "LykkePublicAPI.dll"]
 ARG source=.
 WORKDIR /app

@@ -52,7 +52,8 @@ namespace Services
 
             var btc = assets.First(a => a.Id == LykkeConstants.BitcoinAssetId);
 
-            var response = await ExecuteRequestAsync<BalanceSummaryModel>($"{_url}balances/{address}/summary?colored=true");
+            var completeUrl = new Uri(new Uri(_url), $"balances/{address}/summary?colored=true");
+            var response = await ExecuteRequestAsync<BalanceSummaryModel>(completeUrl.AbsoluteUri);
 
             // Check if they asked for BTC balance. If so, we can go by a short circuit.
             if (asset.BlockChainAssetId == null)

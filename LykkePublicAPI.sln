@@ -6,9 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9E068AD8-532A-4FFB-89B5-1EF9A9BEC91C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70EE310D-63BA-4816-957A-DB5997E2C654}"
-ProjectSection(SolutionItems) = preProject
-	.gitignore = .gitignore
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{68D31CEB-637C-4C5D-B154-5086F305B241}"
 EndProject
@@ -52,5 +52,8 @@ Global
 		{E212D432-2079-472A-A9FC-509818387049} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{4B78FB66-FFE0-43A4-A664-BDDD5D384979} = {68D31CEB-637C-4C5D-B154-5086F305B241}
 		{13636CE2-0B83-42BF-88C5-E162DE97A974} = {68D31CEB-637C-4C5D-B154-5086F305B241}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3040155B-F136-4A3D-B7BA-A42BB960124E}
 	EndGlobalSection
 EndGlobal

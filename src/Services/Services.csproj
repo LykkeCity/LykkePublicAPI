@@ -11,8 +11,8 @@
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.0" />
-    <PackageReference Include="Lykke.Service.Registration" Version="1.1.1" />
+    <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.2" />
+    <PackageReference Include="Lykke.Service.Registration" Version="2.1.2" />
     <PackageReference Include="MessagePack" Version="1.7.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />

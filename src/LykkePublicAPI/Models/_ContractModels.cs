@@ -7,9 +7,9 @@ using Core.Domain.Exchange;
 using Core.Feed;
 using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
-using Lykke.MarketProfileService.Client.Models;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client.Models;
+using Lykke.Service.MarketProfile.Client.Models;
 using MessagePack;
 
 namespace LykkePublicAPI.Models
@@ -178,7 +178,7 @@ namespace LykkePublicAPI.Models
             return trades.Select(x => x.ToApiModel());
         }
 
-        public static ApiAssetPair ToApiModel(this IAssetPair assetPair)
+        public static ApiAssetPair ToApiModel(this AssetPair assetPair)
         {
             return new ApiAssetPair
             {
@@ -191,7 +191,7 @@ namespace LykkePublicAPI.Models
             };
         }
 
-        public static IEnumerable<ApiAssetPair> ToApiModel(this IEnumerable<IAssetPair> assetPairs)
+        public static IEnumerable<ApiAssetPair> ToApiModel(this IEnumerable<AssetPair> assetPairs)
         {
             return assetPairs.Select(x => x.ToApiModel());
         }
@@ -301,7 +301,7 @@ namespace LykkePublicAPI.Models
             }
         }
 
-        public static ApiAsset ToApiModel(this IAsset asset)
+        public static ApiAsset ToApiModel(this Asset asset)
         {
             return new ApiAsset
             {
@@ -315,7 +315,7 @@ namespace LykkePublicAPI.Models
             };
         }
 
-        public static IEnumerable<ApiAsset> ToApiModel(this IEnumerable<IAsset> assets)
+        public static IEnumerable<ApiAsset> ToApiModel(this IEnumerable<Asset> assets)
         {
             return assets.Select(x => x.ToApiModel());
         }

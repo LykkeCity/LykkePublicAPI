@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Core.Feed;
 using Core.Services;
 using Lykke.Domain.Prices;
+using Lykke.Service.Assets.Client;
 using LykkePublicAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
 
@@ -15,18 +15,18 @@ namespace LykkePublicAPI.Controllers
     [Route("api/[controller]")]
     public class AssetPairsController : Controller
     {
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly ICandlesHistoryServiceProvider _candlesServiceProvider;
         private readonly IFeedHistoryRepository _feedHistoryRepository;
         private readonly IMarketProfileService _marketProfileService;
 
         public AssetPairsController(
-            ICachedAssetsService assetsService,
+            IAssetsServiceWithCache assetsServiceWithCache,
             ICandlesHistoryServiceProvider candlesServiceProvider, 
             IFeedHistoryRepository feedHistoryRepository,
             IMarketProfileService marketProfileService)
         {
-            _assetsService = assetsService;
+            _assetsServiceWithCache = assetsServiceWithCache;
             _candlesServiceProvider = candlesServiceProvider;
             _feedHistoryRepository = feedHistoryRepository;
             _marketProfileService = marketProfileService;
@@ -38,7 +38,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("rate")]
         public async Task<IEnumerable<ApiAssetPairRateModel>> GetRate()
         {
-            var assetPairsIds = (await _assetsService.GetAllAssetPairsAsync())
+            var assetPairsIds = (await _assetsServiceWithCache.GetAllAssetPairsAsync())
                 .Where(x => !x.IsDisabled)
                 .Select(x => x.Id)
                 .ToArray();
@@ -65,7 +65,7 @@ namespace LykkePublicAPI.Controllers
         [HttpGet("dictionary/{market?}")]
         public async Task<IEnumerable<ApiAssetPair>> GetDictionary([FromRoute] MarketType? market)
         {
-            var pairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
+            var pairs = (await _assetsServiceWithCache.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
 
             //for now for MT we display only asset pairs configured in candles
             if (market == MarketType.Mt)
@@ -105,7 +105,7 @@ namespace LykkePublicAPI.Controllers
                 return
                     BadRequest(new ApiError { Code = ErrorCodes.InvalidInput, Msg = "Sorry, only day candles are available (temporary)." });
 
-            var pairs = (await _assetsService.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
+            var pairs = (await _assetsServiceWithCache.GetAllAssetPairsAsync()).Where(x => !x.IsDisabled);
 
             if (request.AssetPairIds.Any(x => !pairs.Select(y => y.Id).Contains(x)))
                 return

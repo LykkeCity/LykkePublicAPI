@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lykke.MarketProfileService.Client.Models;
+using Lykke.Service.MarketProfile.Client.Models;
 
 namespace Core.Services
 {

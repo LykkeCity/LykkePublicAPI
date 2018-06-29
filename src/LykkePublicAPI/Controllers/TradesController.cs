@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Exchange;
-using Lykke.Service.Assets.Client.Custom;
 using Lykke.Service.TradesAdapter.Client;
 using LykkePublicAPI.Models;
 using LykkePublicAPI.Models.Trades;

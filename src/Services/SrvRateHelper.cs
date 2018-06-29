@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Common;
 using Core.Services;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.Extensions;
 
 namespace Services
 {
@@ -14,14 +15,14 @@ namespace Services
             _marketProfileService = marketProfileService;
         }
 
-        public async Task<double> GetRate(string neededAssetId, IAssetPair assetPair)
+        public async Task<double> GetRate(string neededAssetId, AssetPair assetPair)
         {
             var rates = await _marketProfileService.TryGetPairAsync(assetPair.Id);
 
             return GetRate(neededAssetId, assetPair, rates.AskPrice);
         }
 
-        private double GetRate(string neededAssetId, IAssetPair assetPair, double price)
+        private double GetRate(string neededAssetId, AssetPair assetPair, double price)
         {
             var inverted = assetPair.IsInverted(neededAssetId);
             int accuracy = inverted ? assetPair.Accuracy : assetPair.InvertedAccuracy;

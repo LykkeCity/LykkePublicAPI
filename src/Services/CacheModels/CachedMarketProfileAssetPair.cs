@@ -1,6 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Lykke.MarketProfileService.Client.Models;
+using Lykke.Service.MarketProfile.Client.Models;
 using MessagePack;
 
 namespace Services.CacheModels

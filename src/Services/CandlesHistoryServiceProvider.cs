@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Core.Domain.Market;
 using Core.Services;
 using Lykke.Service.CandlesHistory.Client;
@@ -17,7 +18,7 @@ namespace Services
 
         public void RegisterMarket(MarketType marketType, string connectionString)
         {
-            _services.Add(marketType, new Candleshistoryservice(new Uri(connectionString)));
+            _services.Add(marketType, new Candleshistoryservice(new Uri(connectionString), new HttpClient()));
         }
 
         public ICandleshistoryservice TryGet(MarketType market)

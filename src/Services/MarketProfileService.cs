@@ -1,23 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Services;
-using Lykke.MarketProfileService.Client;
-using Lykke.MarketProfileService.Client.Models;
+using Lykke.Service.MarketProfile.Client;
+using Lykke.Service.MarketProfile.Client.Models;
 
 namespace Services
 {
     public class MarketProfileService : IMarketProfileService
     {
-        private readonly ILykkeMarketProfileServiceAPI _api;
+        private readonly ILykkeMarketProfile _api;
 
-        public MarketProfileService(ILykkeMarketProfileServiceAPI api)
+        public MarketProfileService(ILykkeMarketProfile api)
         {
             _api = api;
         }
 
         public async Task<AssetPairModel> TryGetPairAsync(string assetPairId)
         {
-            return await _api.TryGetAssetPairAsync(assetPairId);
+            var result = await _api.ApiMarketProfileByPairCodeGetAsync(assetPairId);
+            if (result is AssetPairModel m)
+                return m;
+            return null;
         }
 
         public async Task<IEnumerable<AssetPairModel>> GetAllPairsAsync()

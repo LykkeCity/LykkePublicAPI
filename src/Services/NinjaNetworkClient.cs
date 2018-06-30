@@ -5,7 +5,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Core;
 using Core.Services;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models.Extensions;
 using Services.NinjaContracts;
 
 namespace Services
@@ -15,14 +16,14 @@ namespace Services
     /// </summary>
     public class NinjaNetworkClient : INinjaNetworkClient
     {
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly string _url;
 
         #region Initialization
 
-        public NinjaNetworkClient(ICachedAssetsService assetsService, string url)
+        public NinjaNetworkClient(IAssetsServiceWithCache assetsServiceWithCache, string url)
         {
-            _assetsService = assetsService ?? throw new ArgumentNullException(nameof(assetsService));
+            _assetsServiceWithCache = assetsServiceWithCache ?? throw new ArgumentNullException(nameof(assetsServiceWithCache));
 
             _url = 
                 !string.IsNullOrWhiteSpace(url)
@@ -42,15 +43,11 @@ namespace Services
             if (string.IsNullOrWhiteSpace(assetName))
                 throw new ArgumentNullException(nameof(assetName));
 
-            var assets = await _assetsService.GetAllAssetsAsync();
-            if (!assets?.Any() ?? false)
-                throw new InvalidOperationException("Could not obtain the list of available assets.");
-
-            var asset = assets.FirstOrDefault(a => a.Id == assetName);
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(assetName);
             if (asset == null)
                 throw new ArgumentException($"There is no such an asset: {assetName}"); // Only exception, only hardcore :)
 
-            var btc = assets.First(a => a.Id == LykkeConstants.BitcoinAssetId);
+            var btc = await _assetsServiceWithCache.TryGetAssetAsync(LykkeConstants.BitcoinAssetId);
 
             var completeUrl = new Uri(new Uri(_url), $"balances/{address}/summary?colored=true");
             var response = await ExecuteRequestAsync<BalanceSummaryModel>(completeUrl.AbsoluteUri);

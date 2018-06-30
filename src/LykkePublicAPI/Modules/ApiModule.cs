@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Core;
@@ -9,9 +10,9 @@ using Core;
 using Core.Domain.Market;
 using Core.Domain.Settings;
 using Core.Services;
-using Lykke.MarketProfileService.Client;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
+using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.Registration;
 using Lykke.Service.TradesAdapter.Client;
 using Microsoft.Extensions.Caching.Distributed;
@@ -40,8 +41,6 @@ namespace LykkePublicAPI.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterInstance(_log);
-
-            _services.AddMemoryCache();
 
             builder.RegisterInstance(_settings);
             builder.RegisterInstance(_apiSettings);
@@ -100,8 +99,8 @@ namespace LykkePublicAPI.Modules
 
         private void RegisterServiceClients(ContainerBuilder builder)
         {
-            _services.UseAssetsClient(AssetServiceSettings.Create(new Uri(_settings.Assets.ServiceUrl),
-                _apiSettings.AssetsCache.ExpirationPeriod));
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(new Uri(_settings.Assets.ServiceUrl),
+                _apiSettings.AssetsCache.ExpirationPeriod), _log);
             
             builder.RegisterTradesAdapterClient(_settings.TradesAdapterServiceClient, _log);
 
@@ -114,17 +113,11 @@ namespace LykkePublicAPI.Modules
 
                     return provider;
                 })
-                .As<ICandlesHistoryServiceProvider>();
-
-            // Sets the spot candles history service as default
-
-            builder.Register(c => c.Resolve<ICandlesHistoryServiceProvider>().Get(MarketType.Spot))
+                .As<ICandlesHistoryServiceProvider>()
                 .SingleInstance();
 
-            builder.RegisterType<LykkeMarketProfileServiceAPI>()
-                .As<ILykkeMarketProfileServiceAPI>()
-                .WithParameter(TypedParameter.From(new Uri(_settings.MarketProfileServiceClient.ServiceUrl)))
-                .SingleInstance();
+            builder.RegisterInstance<ILykkeMarketProfile>(
+                new LykkeMarketProfile(new Uri(_settings.MarketProfileServiceClient.ServiceUrl), new HttpClient()));
             
             builder.RegisterRegistrationClient(_settings.RegistrationServiceClient.ServiceUrl, _log);
             builder.RegisterBalancesClient(_settings.BalancesServiceClient.ServiceUrl, _log);

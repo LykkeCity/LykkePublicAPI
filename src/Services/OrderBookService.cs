@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Autofac.Features.AttributeFilters;
 using Common;
-using Core;
 using Core.Domain.Settings;
 using Core.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.Domain.Prices.Model;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
 
 namespace Services
 {
@@ -16,20 +14,20 @@ namespace Services
     {
         private readonly IDistributedCache _distributedCache;
         private readonly PublicApiSettings _settings;
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
 
         public OrderBookService(IDistributedCache distributedCache,
             PublicApiSettings settings,
-            ICachedAssetsService assetsService)
+            IAssetsServiceWithCache assetsServiceWithCache)
         {
             _distributedCache = distributedCache;
             _settings = settings;
-            _assetsService = assetsService;
+            _assetsServiceWithCache = assetsServiceWithCache;
         }
 
         public async Task<IEnumerable<IOrderBook>> GetAllAsync()
         {
-            var assetPairs = await _assetsService.GetAllAssetPairsAsync();
+            var assetPairs = await _assetsServiceWithCache.GetAllAssetPairsAsync();
             var orderBooks = new List<IOrderBook>();
 
             foreach (var pair in assetPairs)

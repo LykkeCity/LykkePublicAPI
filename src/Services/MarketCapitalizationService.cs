@@ -3,7 +3,8 @@ using System.Threading.Tasks;
 using Common;
 using Core;
 using Core.Services;
-using Lykke.Service.Assets.Client.Custom;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models.Extensions;
 using Lykke.Service.Balances.Client;
 
 namespace Services
@@ -11,16 +12,16 @@ namespace Services
     public class MarketCapitalizationService : IMarketCapitalizationService
     {
         private readonly IBalancesClient _balancesClient;
-        private readonly ICachedAssetsService _assetsService;
+        private readonly IAssetsServiceWithCache _assetsServiceWithCache;
         private readonly ISrvRatesHelper _srvRatesHelper;
 
         public MarketCapitalizationService(
             IBalancesClient balancesClient,
-            ICachedAssetsService assetsService,
+            IAssetsServiceWithCache assetsServiceWithCache,
             ISrvRatesHelper srvRatesHelper)
         {
             _balancesClient = balancesClient;
-            _assetsService = assetsService;
+            _assetsServiceWithCache = assetsServiceWithCache;
             _srvRatesHelper = srvRatesHelper;
         }
 
@@ -30,7 +31,7 @@ namespace Services
 
             if (market != LykkeConstants.LykkeAssetId)
             {
-                var assetPairs = await _assetsService.GetAllAssetPairsAsync();
+                var assetPairs = await _assetsServiceWithCache.GetAllAssetPairsAsync();
                 var pair = assetPairs.PairWithAssets(LykkeConstants.LykkeAssetId, market);
 
                 if (pair == null)
@@ -39,7 +40,7 @@ namespace Services
                 rate = await _srvRatesHelper.GetRate(market, pair);
             }
 
-            var asset = await _assetsService.TryGetAssetAsync(market);
+            var asset = await _assetsServiceWithCache.TryGetAssetAsync(market);
             
             var balance = (await _balancesClient.GetTotalBalances()).FirstOrDefault(item => item.AssetId == LykkeConstants.LykkeAssetId);
 

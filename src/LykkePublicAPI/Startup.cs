@@ -8,18 +8,18 @@ using Common.Log;
 using Core.Domain.Settings;
 using Lykke.Common;
 using Lykke.Common.ApiLibrary.Middleware;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
-using Swashbuckle.Swagger.Model;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using LykkePublicAPI.Modules;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace LykkePublicAPI
 {
@@ -57,16 +57,16 @@ namespace LykkePublicAPI
 
             services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMvc();
-            services.AddSwaggerGen();
-
-            services.ConfigureSwaggerGen(options =>
+            services.AddSwaggerGen(options =>
             {
-                options.SingleApiVersion(new Info
-                {
-                    Version = "v1",
-                    Title = "",
-                    TermsOfService = "https://lykke.com/city/terms_of_use"
-                });
+                options.SwaggerDoc(
+                    "v1",
+                    new Info
+                    {
+                        Version = "v1",
+                        Title = "",
+                        TermsOfService = "https://lykke.com/city/terms_of_use"
+                    });
 
                 options.DescribeAllEnumsAsStrings();
 
@@ -128,7 +128,11 @@ namespace LykkePublicAPI
             {
                 c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
             });
-            app.UseSwaggerUi();
+            app.UseSwaggerUI(x =>
+            {
+                x.RoutePrefix = "swagger/ui";
+                x.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");;
+            });
 
             appLifetime.ApplicationStarted.Register(StartApplication);
             appLifetime.ApplicationStopping.Register(StopApplication);

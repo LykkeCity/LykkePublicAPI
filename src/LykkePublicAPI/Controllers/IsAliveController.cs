@@ -1,4 +1,5 @@
 ﻿using System;
+using Lykke.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LykkePublicAPI.Controllers
@@ -11,14 +12,15 @@ namespace LykkePublicAPI.Controllers
         {
             return new IsAliveResponse
             {
-                Version =
-                    Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion,
-                Env = Environment.GetEnvironmentVariable("ENV_INFO")
+                Name = AppEnvironment.Name,
+                Version = AppEnvironment.Version,
+                Env = Environment.GetEnvironmentVariable("ENV_INFO"),
             };
         }
 
         public class IsAliveResponse
         {
+            public string Name { get; set; }
             public string Version { get; set; }
             public string Env { get; set; }
         }

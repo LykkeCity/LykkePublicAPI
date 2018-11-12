@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Tables;
 using Common.Log;
 using Core.Domain.Settings;
+using Lykke.Common;
 using Lykke.Common.ApiLibrary.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,19 +37,19 @@ namespace LykkePublicAPI
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables();
 
-            if (env.IsDevelopment())
-            {
-                builder.AddApplicationInsightsSettings(developerMode: true);
-            }
-
             Configuration = builder.Build();
         }
-        
+
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             var builder = new ContainerBuilder();
 
-            var appSettings = Configuration.LoadSettings<Settings>();
+            var appSettings = Configuration.LoadSettings<Settings>(o =>
+            {
+                o.SetConnString(s => s.SlackNotifications.AzureQueue.ConnectionString);
+                o.SetQueueName(s => s.SlackNotifications.AzureQueue.QueueName);
+                o.SenderName = $"{AppEnvironment.Name} {AppEnvironment.Version}";
+            });
             var settings = appSettings.CurrentValue;
             var dbSettings = appSettings.Nested(x => x.PublicApi.Db);
 
@@ -119,34 +119,37 @@ namespace LykkePublicAPI
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseLykkeMiddleware("PublicAPI", ex => new { Message = "Technical problem" });
+            app.UseLykkeMiddleware(ex => new { Message = "Technical problem" });
             app.UseIpRateLimiting();
 
             app.UseMvc();
 
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.PreSerializeFilters.Add((swagger, httpReq) => swagger.Host = httpReq.Host.Value);
+            });
             app.UseSwaggerUi();
 
-            appLifetime.ApplicationStarted.Register(() => StartApplication().GetAwaiter().GetResult());
-            appLifetime.ApplicationStopping.Register(() => StopApplication().GetAwaiter().GetResult());
-            appLifetime.ApplicationStopped.Register(() => CleanUp().GetAwaiter().GetResult());
+            appLifetime.ApplicationStarted.Register(StartApplication);
+            appLifetime.ApplicationStopping.Register(StopApplication);
+            appLifetime.ApplicationStopped.Register(CleanUp);
         }
 
-        private async Task StartApplication()
+        private void StartApplication()
         {
             try
             {
                 // NOTE: Job not yet recieve and process IsAlive requests here
-                await Log.WriteMonitorAsync("", "", "Started");
+                Log.WriteMonitor("", "", "Started");
             }
             catch (Exception ex)
             {
-                await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StartApplication), "", ex);
+                Log.WriteFatalError(nameof(Startup), nameof(StartApplication), ex);
                 throw;
             }
         }
 
-        private async Task StopApplication()
+        private void StopApplication()
         {
             try
             {
@@ -154,24 +157,18 @@ namespace LykkePublicAPI
             }
             catch (Exception ex)
             {
-                if (Log != null)
-                {
-                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(StopApplication), "", ex);
-                }
+                Log?.WriteFatalError(nameof(Startup), nameof(StopApplication), ex);
                 throw;
             }
         }
 
-        private async Task CleanUp()
+        private void CleanUp()
         {
             try
             {
                 // NOTE: Job can't recieve and process IsAlive requests here, so you can destroy all resources
 
-                if (Log != null)
-                {
-                    await Log.WriteMonitorAsync("", "", "Terminating");
-                }
+                Log?.WriteMonitor("", "", "Terminating");
 
                 ApplicationContainer.Dispose();
             }
@@ -179,7 +176,7 @@ namespace LykkePublicAPI
             {
                 if (Log != null)
                 {
-                    await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
+                    Log.WriteFatalError(nameof(Startup), nameof(CleanUp), ex);
                     (Log as IDisposable)?.Dispose();
                 }
                 throw;

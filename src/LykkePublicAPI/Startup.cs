@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using AspNetCoreRateLimit;
 using Autofac;
@@ -15,6 +16,8 @@ using LykkePublicAPI.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -57,6 +60,15 @@ namespace LykkePublicAPI
 
             services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMvc();
+            services.Configure<MvcOptions>(opts =>
+            {
+                opts.OutputFormatters.RemoveType<JsonOutputFormatter>();
+                var formatterSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+                formatterSettings.DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffZ";
+                JsonOutputFormatter jsonOutputFormatter = new JsonOutputFormatter(formatterSettings, ArrayPool<char>.Create());
+                opts.OutputFormatters.Insert(0, jsonOutputFormatter);
+            });
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc(

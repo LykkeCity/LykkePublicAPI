@@ -1,4 +1,5 @@
-﻿using Lykke.Service.TradesAdapter.AutorestClient.Models;
+﻿using System;
+using Lykke.Service.TradesAdapter.AutorestClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -8,7 +9,7 @@ namespace LykkePublicAPI.Models.Trades
     {
         public string Id { set; get; }
         public string AssetPairId { set; get; }
-        public string DateTime { set; get; }
+        public DateTime DateTime { set; get; }
         public double Volume { set; get; }
         public int? Index { set; get; }
         public double Price { set; get; }
@@ -24,7 +25,7 @@ namespace LykkePublicAPI.Models.Trades
             {
                 Id = trade.Id,
                 AssetPairId = trade.AssetPairId,
-                DateTime = trade.DateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                DateTime = trade.DateTime,
                 Volume = trade.Volume,
                 Price = trade.Price,
                 Action = trade.Action,

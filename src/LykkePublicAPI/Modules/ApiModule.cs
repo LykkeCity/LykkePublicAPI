@@ -55,7 +55,9 @@ namespace LykkePublicAPI.Modules
 
             builder.RegisterType<MarketCapitalizationService>().Named<IMarketCapitalizationService>("default");
             builder.RegisterType<MarketProfileService>().Named<IMarketProfileService>("default");
-            builder.RegisterType<MarketTradingDataService>().Named<IMarketTradingDataService>("default");
+            builder.RegisterType<MarketTradingDataService>()
+                .Named<IMarketTradingDataService>("default")
+                .WithParameter("isMtEnabled", !_apiSettings.IsMtDisabled ?? true);
 
             // Cached decorators
 
@@ -109,7 +111,8 @@ namespace LykkePublicAPI.Modules
                     var provider = new CandlesHistoryServiceProvider();
 
                     provider.RegisterMarket(MarketType.Spot, _settings.CandlesHistoryServiceClient.ServiceUrl);
-                    provider.RegisterMarket(MarketType.Mt, _settings.MtCandlesHistoryServiceClient.ServiceUrl);
+                    if (!_settings.PublicApi.IsMtDisabled.HasValue || !_settings.PublicApi.IsMtDisabled.Value)
+                        provider.RegisterMarket(MarketType.Mt, _settings.MtCandlesHistoryServiceClient.ServiceUrl);
 
                     return provider;
                 })

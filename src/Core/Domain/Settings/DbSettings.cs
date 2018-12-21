@@ -56,6 +56,8 @@ namespace Core.Domain.Settings
         public string[] CrossdomainOrigins { get; set; }
         public LykkeCompanyData CompanyInfo { get; set; }
         public AssetsCacheSettings AssetsCache { get; set; }
+        [Optional]
+        public bool? IsMtDisabled { get; set; }
         public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
     }
 

@@ -8,7 +8,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="7.3.0" />
+    <PackageReference Include="Lykke.Common" Version="7.3.1" />
     <PackageReference Include="Lykke.Domain.Prices" Version="0.9.11" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.1.2" />

@@ -18,6 +18,7 @@ using Swashbuckle.Swagger.Model;
 using Lykke.Logs;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
+using LykkePublicAPI.Middlewares;
 using LykkePublicAPI.Modules;
 using Microsoft.AspNetCore.Http;
 
@@ -120,6 +121,7 @@ namespace LykkePublicAPI
             }
 
             app.UseLykkeMiddleware("PublicAPI", ex => new { Message = "Technical problem" });
+            app.UseMiddleware<ApiTraceMiddleware>();
             app.UseIpRateLimiting();
 
             app.UseMvc();

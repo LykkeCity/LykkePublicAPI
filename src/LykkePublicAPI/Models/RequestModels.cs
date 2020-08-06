@@ -12,8 +12,6 @@ namespace LykkePublicAPI.Models
 
     public enum Period
     {
-        Sec,
-        Minute,
         Min5,
         Min15,
         Min30,
@@ -72,10 +70,6 @@ namespace LykkePublicAPI.Models
         {
             switch (candleType)
             {
-                case Period.Sec:
-                    return CandleTimeInterval.Sec;
-                case Period.Minute:
-                    return CandleTimeInterval.Minute;
                 case Period.Min5:
                     return CandleTimeInterval.Min5;
                 case Period.Min15:
@@ -105,10 +99,6 @@ namespace LykkePublicAPI.Models
         {
             switch (candleType)
             {
-                case Period.Sec:
-                    return Lykke.Domain.Prices.TimeInterval.Sec;
-                case Period.Minute:
-                    return Lykke.Domain.Prices.TimeInterval.Minute;
                 case Period.Min5:
                     return Lykke.Domain.Prices.TimeInterval.Min5;
                 case Period.Min15:

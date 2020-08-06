@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Domain.Settings;
 using Core.Services;
 using LykkePublicAPI.Models;
 using Lykke.Service.CandlesHistory.Client;
@@ -14,10 +14,15 @@ namespace LykkePublicAPI.Controllers
     public class CandlesController : Controller
     {
         private readonly ICandlesHistoryServiceProvider _candlesServiceProvider;
+        private readonly PublicApiSettings _settings;
 
-        public CandlesController(ICandlesHistoryServiceProvider candlesServiceProvider)
+        public CandlesController(
+            ICandlesHistoryServiceProvider candlesServiceProvider,
+            PublicApiSettings settings
+            )
         {
             _candlesServiceProvider = candlesServiceProvider;
+            _settings = settings;
         }
 
         /// <summary>
@@ -46,7 +51,7 @@ namespace LykkePublicAPI.Controllers
             }
 
             var response = await candlesService.GetAvailableAssetPairsAsync();
-           
+
             return Ok(response);
         }
 
@@ -58,8 +63,6 @@ namespace LykkePublicAPI.Controllers
         ///     Spot,
         ///     Mt
         /// Available period values
-        ///     Sec,
-        ///     Minute,
         ///     Min5,
         ///     Min15,
         ///     Min30,
@@ -100,7 +103,7 @@ namespace LykkePublicAPI.Controllers
             }
 
             CandlesHistoryResponseModel history;
-            
+
             try
             {
                 history = await candlesService.GetCandlesHistoryAsync(
@@ -115,7 +118,7 @@ namespace LykkePublicAPI.Controllers
                 var errorMessage = e.Error.ErrorMessages != null && e.Error.ErrorMessages.Any()
                     ? string.Join(",", e.Error.ErrorMessages.Values.SelectMany(msg => msg).ToArray())
                     : "History for asset pair is not available";
-                
+
                 return BadRequest(new ApiError
                 {
                     Code = ErrorCodes.InvalidInput,
@@ -141,7 +144,7 @@ namespace LykkePublicAPI.Controllers
         /// </summary>
         /// <param name="market">The market type. Acceptable values: Spot, Mt.</param>
         /// <param name="assetPair">The asset pair Id.</param>
-        /// <param name="period">The time period. Acceptable values: Sec, Minute, Min5, Min15, Min30, Hour, Hour4, Hour6, Hour12, Day, Week, Month.</param>
+        /// <param name="period">The time period. Acceptable values: Min5, Min15, Min30, Hour, Hour4, Hour6, Hour12, Day, Week, Month.</param>
         /// <param name="type">The price type. Acceptable values: Bid, Ask, Mid, Trades.</param>
         /// <param name="from">The request's starting date and time.</param>
         /// <param name="to">The request's finishing date and time.</param>
@@ -203,6 +206,73 @@ namespace LykkePublicAPI.Controllers
                 DateFrom = from,
                 DateTo = to,
                 Type = type,
+                Data = history.History.ToApiModel2().ToList()
+            };
+
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Get second candles for specified period and asset pair
+        /// </summary>
+        /// <param name="assetPairId">The asset pair Id.</param>
+        /// <param name="type">The price type. Acceptable values: Bid, Ask, Mid, Trades.</param>
+        /// <param name="from">The request starting date and time.</param>
+        /// <param name="to">The request finishing date and time.</param>
+        /// <param name="token">Token to access to the endpoint.</param>
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet("second-history/{assetPairId}")]
+        [ProducesResponseType(typeof(CandlesHistoryListResponse<ApiCandle2>), 200)]
+        [ProducesResponseType(typeof(ApiError), 400)]
+        public async Task<IActionResult> GetSecondHistoryCandles(
+            string assetPairId,
+            [FromQuery] PriceType type,
+            [FromQuery] DateTime from,
+            [FromQuery] DateTime to,
+            [FromQuery] string token)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.ToApiError());
+            }
+
+            if (token != _settings.CandlesToken)
+                return BadRequest("Invalid token");
+
+            if (to < from)
+                return BadRequest("Invalid date range");
+
+            if (to - from > TimeSpan.FromDays(1))
+                return BadRequest("Date range can't be more that 24 hours");
+
+            var candlesService = _candlesServiceProvider.TryGet(Core.Domain.Market.MarketType.Spot);
+
+            CandlesHistoryResponseModel history;
+
+            try
+            {
+                history = await candlesService.GetCandlesHistoryFromDbAsync(
+                    assetPairId,
+                    type.ToCandlesHistoryServiceModel(),
+                    CandleTimeInterval.Sec,
+                    from,
+                    to);
+            }
+            catch (Lykke.Service.CandlesHistory.Client.Custom.ErrorResponseException e)
+            {
+                var errorMessage = e.Error.ErrorMessages != null && e.Error.ErrorMessages.Any()
+                    ? string.Join(",", e.Error.ErrorMessages.Values.SelectMany(msg => msg).ToArray())
+                    : "History for asset pair is not available";
+
+                return BadRequest(new ApiError
+                {
+                    Code = ErrorCodes.InvalidInput,
+                    Msg = errorMessage
+                });
+            }
+
+            var response = new CandlesHistoryListResponse<ApiCandle2>
+            {
                 Data = history.History.ToApiModel2().ToList()
             };
 

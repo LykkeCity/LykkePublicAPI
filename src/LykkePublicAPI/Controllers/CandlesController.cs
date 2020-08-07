@@ -221,15 +221,15 @@ namespace LykkePublicAPI.Controllers
         /// <param name="to">The request finishing date and time.</param>
         /// <param name="token">Token to access to the endpoint.</param>
         [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpGet("second-history/{assetPairId}")]
+        [HttpGet("second-history/{token}/{assetPairId}")]
         [ProducesResponseType(typeof(CandlesHistoryListResponse<ApiCandle2>), 200)]
         [ProducesResponseType(typeof(ApiError), 400)]
         public async Task<IActionResult> GetSecondHistoryCandles(
+            string token,
             string assetPairId,
             [FromQuery] PriceType type,
             [FromQuery] DateTime from,
-            [FromQuery] DateTime to,
-            [FromQuery] string token)
+            [FromQuery] DateTime to)
         {
             if (!ModelState.IsValid)
             {

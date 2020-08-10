@@ -58,6 +58,7 @@ namespace Core.Domain.Settings
         public AssetsCacheSettings AssetsCache { get; set; }
         [Optional]
         public bool? IsMtDisabled { get; set; }
+        public string CandlesToken { get; set; }
         public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
     }
 
@@ -71,13 +72,13 @@ namespace Core.Domain.Settings
         [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
-    
+
     public class RegistrationServiceClientSettings
     {
         [HttpCheck("/api/isalive")]
         public string ServiceUrl { get; set; }
     }
-    
+
     public class AssetsSettings
     {
         [HttpCheck("/api/isalive")]
@@ -87,7 +88,7 @@ namespace Core.Domain.Settings
     public class AssetsCacheSettings
     {
         public TimeSpan ExpirationPeriod { get; set; }
-    } 
+    }
 
     public class CandlesHistoryServiceClientSettings
     {

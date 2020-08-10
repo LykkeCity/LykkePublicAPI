@@ -125,6 +125,11 @@ namespace LykkePublicAPI.Models
         public List<T> Data { get; set; } = new List<T>();
     }
 
+    public class CandlesHistoryListResponse<T>
+    {
+        public List<T> Data { get; set; } = new List<T>();
+    }
+
     public class ApiCommonTrade
     {
         public string Id { get; set; }

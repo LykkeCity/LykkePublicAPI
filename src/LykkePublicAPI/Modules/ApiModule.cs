@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using Antares.Service.MarketProfile.Client;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Core;
@@ -12,7 +14,6 @@ using Core.Domain.Settings;
 using Core.Services;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
-using Lykke.Service.MarketProfile.Client;
 using Lykke.Service.Registration;
 using Lykke.Service.TradesAdapter.Client;
 using Microsoft.Extensions.Caching.Distributed;
@@ -119,8 +120,16 @@ namespace LykkePublicAPI.Modules
                 .As<ICandlesHistoryServiceProvider>()
                 .SingleInstance();
 
-            builder.RegisterInstance<ILykkeMarketProfile>(
-                new LykkeMarketProfile(new Uri(_settings.MarketProfileServiceClient.ServiceUrl), new HttpClient()));
+            builder.Register((x) =>
+            {
+                var marketProfile = new MarketProfileServiceClient(_settings.PublicApi.MyNoSqlServer.ReaderServiceUrl, _settings.MarketProfileServiceClient.ServiceUrl);
+                marketProfile.Start();
+
+                return marketProfile;
+            })
+            .As<IMarketProfileServiceClient>()
+            .SingleInstance()
+            .AutoActivate();
             
             builder.RegisterRegistrationClient(_settings.RegistrationServiceClient.ServiceUrl, _log);
             builder.RegisterBalancesClient(_settings.BalancesServiceClient.ServiceUrl, _log);

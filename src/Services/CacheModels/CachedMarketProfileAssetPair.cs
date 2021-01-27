@@ -1,6 +1,6 @@
 ﻿using System;
+using Antares.Service.MarketProfile.LykkeClient.Models;
 using JetBrains.Annotations;
-using Lykke.Service.MarketProfile.Client.Models;
 using MessagePack;
 
 namespace Services.CacheModels

@@ -136,9 +136,4 @@ namespace Core.Domain.Settings
             return string.Format(settings.OrderBooksCacheKeyPattern, assetPairId, isBuy);
         }
     }
-
-    public class MyNoSqlSettings
-    {
-        public string ReaderServiceUrl { get; set; }
-    }
 }

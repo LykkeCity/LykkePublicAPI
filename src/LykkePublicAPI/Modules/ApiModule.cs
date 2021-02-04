@@ -12,6 +12,7 @@ using Core;
 using Core.Domain.Market;
 using Core.Domain.Settings;
 using Core.Services;
+using Lykke.Common.Log;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.Registration;
@@ -122,7 +123,10 @@ namespace LykkePublicAPI.Modules
 
             builder.Register((x) =>
             {
-                var marketProfile = new MarketProfileServiceClient(_settings.PublicApi.MyNoSqlServer.ReaderServiceUrl, _settings.MarketProfileServiceClient.ServiceUrl);
+                var marketProfile = new MarketProfileServiceClient(
+                    _settings.PublicApi.MyNoSqlServer.ReaderServiceUrl, 
+                    _settings.MarketProfileServiceClient.ServiceUrl,
+                    x.Resolve<ILogFactory>());
                 marketProfile.Start();
 
                 return marketProfile;

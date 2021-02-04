@@ -2,12 +2,14 @@
 using System.Buffers;
 using System.IO;
 using System.Linq;
+using Antares.Service.MarketProfile.Client;
 using AspNetCoreRateLimit;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AzureStorage.Tables;
 using Common.Log;
 using Core.Domain.Settings;
+using Core.Services;
 using Lykke.Common;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Logs;
@@ -163,6 +165,8 @@ namespace LykkePublicAPI
             {
                 // NOTE: Job not yet recieve and process IsAlive requests here
                 Log.WriteMonitor("", "", "Started");
+                var marketProfileServiceClient =  ApplicationContainer.Resolve<IMarketProfileServiceClient>();
+                marketProfileServiceClient.Start();
             }
             catch (Exception ex)
             {

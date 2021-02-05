@@ -125,8 +125,7 @@ namespace LykkePublicAPI.Modules
             {
                 var marketProfile = new MarketProfileServiceClient(
                     _settings.PublicApi.MyNoSqlServer.ReaderServiceUrl, 
-                    _settings.MarketProfileServiceClient.ServiceUrl,
-                    x.Resolve<ILogFactory>());
+                    _settings.MarketProfileServiceClient.ServiceUrl);
                 marketProfile.Start();
 
                 return marketProfile;

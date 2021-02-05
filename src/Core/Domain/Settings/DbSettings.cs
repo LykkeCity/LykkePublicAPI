@@ -51,6 +51,7 @@ namespace Core.Domain.Settings
 
     public class PublicApiSettings
     {
+        public MyNoSqlSettings MyNoSqlServer { get; set; }
         public DbSettings Db { get; set; }
         public CacheSettings CacheSettings { get; set; }
         public string[] CrossdomainOrigins { get; set; }

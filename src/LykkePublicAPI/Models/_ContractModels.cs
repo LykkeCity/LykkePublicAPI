@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Antares.Service.MarketProfile.LykkeClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Core.Domain.Exchange;
@@ -9,7 +10,6 @@ using Lykke.Domain.Prices.Model;
 using Lykke.Domain.Prices.Contracts;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client.Models;
-using Lykke.Service.MarketProfile.Client.Models;
 using MessagePack;
 
 namespace LykkePublicAPI.Models

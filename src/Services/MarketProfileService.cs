@@ -1,31 +1,48 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Antares.Service.MarketProfile.Client;
+using Antares.Service.MarketProfile.LykkeClient;
+using Antares.Service.MarketProfile.LykkeClient.Models;
 using Core.Services;
-using Lykke.Service.MarketProfile.Client;
-using Lykke.Service.MarketProfile.Client.Models;
+using Lykke.Job.MarketProfile.Contract;
 
 namespace Services
 {
     public class MarketProfileService : IMarketProfileService
     {
         private readonly ILykkeMarketProfile _api;
+        private readonly IMarketProfileServiceClient _client;
 
-        public MarketProfileService(ILykkeMarketProfile api)
+        public MarketProfileService(IMarketProfileServiceClient client)
         {
-            _api = api;
+            _api = client.HttpClient;
+            _client = client;
         }
 
         public async Task<AssetPairModel> TryGetPairAsync(string assetPairId)
         {
+            var assetPair = _client.Get(assetPairId);
+
+            if (assetPair != null)
+                return MapToModel(assetPair);
+
             var result = await _api.ApiMarketProfileByPairCodeGetAsync(assetPairId);
             if (result is AssetPairModel m)
                 return m;
+
             return null;
         }
 
-        public async Task<IEnumerable<AssetPairModel>> GetAllPairsAsync()
+        private static AssetPairModel MapToModel(IAssetPair assetPair)
         {
-            return await _api.ApiMarketProfileGetAsync();
+            return new AssetPairModel(assetPair.AssetPair, assetPair.BidPrice, assetPair.AskPrice, assetPair.BidPriceTimestamp, assetPair.AskPriceTimestamp);
+        }
+
+        public Task<IEnumerable<AssetPairModel>> GetAllPairsAsync()
+        {
+            var allPairs = _client.GetAll();
+            return Task.FromResult(allPairs.Select<IAssetPair, AssetPairModel>(MapToModel));
         }
 
         public void Dispose()

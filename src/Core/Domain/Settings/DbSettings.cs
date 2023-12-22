@@ -11,7 +11,6 @@ namespace Core.Domain.Settings
         public PublicApiSettings PublicApi { get; set; }
         public CandlesHistoryServiceClientSettings CandlesHistoryServiceClient { get; set; }
         public CandlesHistoryServiceClientSettings MtCandlesHistoryServiceClient { get; set; }
-        public NinjaServiceClientSettings NinjaServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
         public AssetsSettings Assets { get; set; }
         public MarketProfileServiceClientSettings MarketProfileServiceClient { get; set; }
@@ -61,11 +60,6 @@ namespace Core.Domain.Settings
         public bool? IsMtDisabled { get; set; }
         public string CandlesToken { get; set; }
         public RateLimitSettings.RateLimitCoreOptions IpRateLimiting { get; set; }
-    }
-
-    public class NinjaServiceClientSettings
-    {
-        public string ServiceUrl { get; set; }
     }
 
     public class MarketProfileServiceClientSettings
